@@ -1,4 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using System.Data;
+using System.Data.Common;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 class Scanner {
@@ -8,6 +11,26 @@ class Scanner {
     private int start = 0;
     private int current = 0;
     private int line = 1;
+
+    private static readonly Dictionary<string, TokenType>? keywords = new Dictionary<string, TokenType>
+    {
+        {"and", TokenType.AND},
+        {"class", TokenType.CLASS},
+        {"else", TokenType.ELSE},
+        {"false", TokenType.FALSE},
+        {"for", TokenType.FOR},
+        {"fun", TokenType.FUN},
+        {"if", TokenType.IF},
+        {"nil", TokenType.NIL},
+        {"or", TokenType.OR},
+        {"print", TokenType.PRINT},
+        {"return", TokenType.RETURN},
+        {"super", TokenType.SUPER},
+        {"this", TokenType.THIS},
+        {"true", TokenType.TRUE},
+        {"var", TokenType.VAR},
+        {"while", TokenType.WHILE}
+    };
 
     public Scanner(string source) {
         this.source = source;
@@ -67,9 +90,38 @@ class Scanner {
                 break;
             case '"': _string(); break;
             default:
-                Lox.error(line, "Unexpected character.");
+                if (isDigit(c)) {
+                    number();
+                } else if (isAlpha(c)) {
+                    identifier();
+                } else {
+                    Lox.error(line, "Unexpected character.");
+                }
                 break;
         }
+    }
+
+    private void identifier() {
+        while (isAlphaNumeric(peek())) advance();
+
+        string text = source.Substring(start, current - start);
+        TokenType? type = keywords.ContainsKey(text) ? keywords[text] : null;
+        if (type == null) type = TokenType.IDENTIFIER;
+        addToken(type);
+    }
+
+    private void number() {
+        while (isDigit(peek())) advance();
+
+        // Look for a fractional part.
+        if (peek() == '.' && isDigit(peekNext())) {
+            // Consume the "."
+            advance();
+
+            while (isDigit(peek())) advance();
+        }
+
+        addToken(TokenType.NUMBER, double.Parse(source.Substring(start, current - start)));
     }
 
     private void _string() {
@@ -104,6 +156,25 @@ class Scanner {
         return source.ElementAt(current);
     }
 
+    private char peekNext() {
+        if (current + 1 >= source.Length) return '\0';
+        return source.ElementAt(current + 1);
+    }
+
+    private bool isAlpha(char c) {
+        return (c >= 'a' && c <= 'z') ||
+                (c >= 'A' && c <= 'Z') ||
+                c == '_';
+    }
+
+    private bool isAlphaNumeric(char c) {
+        return isAlpha(c) || isDigit(c);
+    }
+
+    private bool isDigit(char c) {
+        return c >= '0' && c <= '9';
+    }
+
     private bool isAtEnd() {
         return current >= source.Length;
     }
@@ -112,11 +183,11 @@ class Scanner {
         return source.ElementAt(current++);
     }
 
-    private void addToken(TokenType type) {
+    private void addToken(TokenType? type) {
         addToken(type, null);
     }
 
-    private void addToken(TokenType type, object? literal) {
+    private void addToken(TokenType? type, object? literal) {
         string text = source.Substring(start, current - start);
         tokens.Add(new Token(type, text, literal, line));
     }
