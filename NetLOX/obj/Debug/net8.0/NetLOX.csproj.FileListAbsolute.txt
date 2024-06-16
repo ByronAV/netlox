@@ -1,0 +1,14 @@
+/home/vyron/projects/Github/netlox/NetLOX/bin/Debug/net8.0/NetLOX
+/home/vyron/projects/Github/netlox/NetLOX/bin/Debug/net8.0/NetLOX.deps.json
+/home/vyron/projects/Github/netlox/NetLOX/bin/Debug/net8.0/NetLOX.runtimeconfig.json
+/home/vyron/projects/Github/netlox/NetLOX/bin/Debug/net8.0/NetLOX.dll
+/home/vyron/projects/Github/netlox/NetLOX/bin/Debug/net8.0/NetLOX.pdb
+/home/vyron/projects/Github/netlox/NetLOX/obj/Debug/net8.0/NetLOX.GeneratedMSBuildEditorConfig.editorconfig
+/home/vyron/projects/Github/netlox/NetLOX/obj/Debug/net8.0/NetLOX.AssemblyInfoInputs.cache
+/home/vyron/projects/Github/netlox/NetLOX/obj/Debug/net8.0/NetLOX.AssemblyInfo.cs
+/home/vyron/projects/Github/netlox/NetLOX/obj/Debug/net8.0/NetLOX.csproj.CoreCompileInputs.cache
+/home/vyron/projects/Github/netlox/NetLOX/obj/Debug/net8.0/NetLOX.dll
+/home/vyron/projects/Github/netlox/NetLOX/obj/Debug/net8.0/refint/NetLOX.dll
+/home/vyron/projects/Github/netlox/NetLOX/obj/Debug/net8.0/NetLOX.pdb
+/home/vyron/projects/Github/netlox/NetLOX/obj/Debug/net8.0/NetLOX.genruntimeconfig.cache
+/home/vyron/projects/Github/netlox/NetLOX/obj/Debug/net8.0/ref/NetLOX.dll
