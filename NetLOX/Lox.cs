@@ -8,25 +8,25 @@ using System.Runtime.InteropServices;
 public class Lox {
 
     static bool hadError = false;
-    public static void main(string[] args) {
+    public static void Main(string[] args) {
         try {
             if (args.Length > 1 ) {
                 Console.WriteLine("Usage: netlox [script]");
                 Environment.Exit(64);
             } else if (args.Length == 1) {
-                runFile(args[0]);
+                RunFile(args[0]);
             } else {
-                runPrompt();
+                RunPrompt();
             }
         } catch (System.IO.IOException e) {
             Console.WriteLine(e.Message);
         }
     }
 
-    private static void runFile(string path) {
+    private static void RunFile(string path) {
         try {
             byte[] bytes = File.ReadAllBytes(path);
-            run(new string(Encoding.Default.GetString(bytes)));
+            Run(new string(Encoding.Default.GetString(bytes)));
 
             // Indicate an error in the exit code.
             if (hadError) Environment.Exit(65);
@@ -35,14 +35,14 @@ public class Lox {
         }
     }
 
-    private static void runPrompt() {
+    private static void RunPrompt() {
         try {
             using (StreamReader sr = new StreamReader(Console.OpenStandardInput())) {
                 for(;;) {
-                    Console.WriteLine("> ");
+                    Console.Write("> ");
                     string? line = sr.ReadLine();
                     if (line == null) break;
-                    //run(line);
+                    Run(line);
                     hadError = false;
                 }
             }
@@ -51,22 +51,36 @@ public class Lox {
         }
     }
 
-    private static void run(string source) {
+    private static void Run(string source) {
         Scanner scanner = new Scanner(source);
-        List<Token> tokens = scanner.scanTokens();
+        List<Token> tokens = scanner.ScanTokens();
+        Parser<string> parser = new Parser<string>(tokens);
+        Expr<string>? expression = parser.Parse();
+
+        if (hadError) return;
+
+        Console.WriteLine(new AstPrinter().Print(expression));
 
         // For now, just print the tokens
-        foreach (Token token in tokens) {
-            Console.WriteLine(token);
-        }
+        // foreach (Token token in tokens) {
+        //     Console.WriteLine(token.ToString());
+        // }
     }
 
-    public static void error(int line, string message) {
-        report(line, "", message);
+    public static void Error(int line, string message) {
+        Report(line, "", message);
     }
 
-    private static void report(int line, string where, string message) {
+    private static void Report(int line, string where, string message) {
         Console.Error.Write("[line " + line + "] Error" + where + ": " + message);
         hadError = true;
+    }
+
+    public static void Error(Token token, string message) {
+        if (token.type == TokenType.EOF) {
+            Report(token.line, " at end", message);
+        } else {
+            Report(token.line, " at '" + token.lexeme + "'", message);
+        }
     }
 }

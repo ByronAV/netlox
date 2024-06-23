@@ -12,3 +12,4 @@
 /home/vyron/projects/Github/netlox/NetLOX/obj/Debug/net8.0/NetLOX.pdb
 /home/vyron/projects/Github/netlox/NetLOX/obj/Debug/net8.0/NetLOX.genruntimeconfig.cache
 /home/vyron/projects/Github/netlox/NetLOX/obj/Debug/net8.0/ref/NetLOX.dll
+/home/vyron/projects/Github/netlox/NetLOX/obj/Debug/net8.0/NetLOX.sourcelink.json

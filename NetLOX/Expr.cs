@@ -4,21 +4,21 @@ using System.Threading.Tasks.Dataflow;
 
 public abstract class Expr<R> {
     public interface IVisitor {
-        abstract R visitAssignExpr(Assign expr);
-        R visitBinaryExpr(Binary expr);
-        R visitCallExpr(Call expr);
-        R visitGetExpr(Get expr);
-        R visitGroupingExpr(Grouping expr);
-        R visitLiteralExpr(Literal expr);
-        R visitLogicalExpr(Logical expr);
-        R visitSetExpr(Set expr);
-        R visitSuperExpr(Super expr);
-        R visitThisExpr(This expr);
-        R visitUnaryExpr(Unary expr);
-        R visitVariableExpr(Variable expr);
+        R VisitAssignExpr(Assign expr);
+        R VisitBinaryExpr(Binary expr);
+        R VisitCallExpr(Call expr);
+        R VisitGetExpr(Get expr);
+        R VisitGroupingExpr(Grouping expr);
+        R VisitLiteralExpr(Literal expr);
+        R VisitLogicalExpr(Logical expr);
+        R VisitSetExpr(Set expr);
+        R VisitSuperExpr(Super expr);
+        R VisitThisExpr(This expr);
+        R VisitUnaryExpr(Unary expr);
+        R VisitVariableExpr(Variable expr);
     }
 
-    public abstract R accept(IVisitor visitor);
+    public abstract R Accept(IVisitor visitor);
 
     public class Assign : Expr<R> {
         public Assign(Token name, Expr<R> value) {
@@ -26,8 +26,8 @@ public abstract class Expr<R> {
             this.value = value;
         }
 
-        public override R accept(IVisitor visitor) {
-            return visitor.visitAssignExpr(this);
+        public override R Accept(IVisitor visitor) {
+            return visitor.VisitAssignExpr(this);
         }
 
         public readonly Token name;
@@ -35,14 +35,14 @@ public abstract class Expr<R> {
     }
 
     public class Binary : Expr<R> {
-        Binary(Expr<R> left, Token _operator, Expr<R> right) {
+        public Binary(Expr<R> left, Token _operator, Expr<R> right) {
             this.left = left;
             this._operator = _operator;
             this.right = right;
         }
 
-        public override R accept(IVisitor visitor) {
-            return visitor.visitBinaryExpr(this);
+        public override R Accept(IVisitor visitor) {
+            return visitor.VisitBinaryExpr(this);
         }
 
         public readonly Expr<R> left;
@@ -51,14 +51,14 @@ public abstract class Expr<R> {
     }
 
     public class Call : Expr<R> {
-        Call(Expr<R> callee, Token paren, List<Expr<R>> arguments) {
+        public Call(Expr<R> callee, Token paren, List<Expr<R>> arguments) {
             this.callee = callee;
             this.paren = paren;
             this.arguments = arguments;
         }
 
-        public override R accept(IVisitor visitor) {
-            return visitor.visitCallExpr(this);
+        public override R Accept(IVisitor visitor) {
+            return visitor.VisitCallExpr(this);
         }
 
         public readonly Expr<R> callee;
@@ -67,13 +67,13 @@ public abstract class Expr<R> {
     }
 
     public class Get : Expr<R> {
-        Get(Expr<R> _object, Token name) {
+        public Get(Expr<R> _object, Token name) {
             this._object = _object;
             this.name = name;
         }
 
-        public override R accept(IVisitor visitor) {
-            return visitor.visitGetExpr(this);
+        public override R Accept(IVisitor visitor) {
+            return visitor.VisitGetExpr(this);
         }
 
         public readonly Expr<R> _object;
@@ -81,13 +81,13 @@ public abstract class Expr<R> {
     }
 
     public class Grouping : Expr<R> {
-        Grouping(Expr<R> expression) {
+        public Grouping(Expr<R> expression) {
             this.expression = expression;
         }
 
-        public override R accept(IVisitor visitor)
+        public override R Accept(IVisitor visitor)
         {
-            return visitor.visitGroupingExpr(this);
+            return visitor.VisitGroupingExpr(this);
         }
 
         public readonly Expr<R> expression;
@@ -95,28 +95,28 @@ public abstract class Expr<R> {
 
 
     public class Literal : Expr<R> {
-        Literal(object value) {
+        public Literal(object value) {
             this.value = value;
         }
 
-        public override R accept(IVisitor visitor)
+        public override R Accept(IVisitor visitor)
         {
-            return visitor.visitLiteralExpr(this);
+            return visitor.VisitLiteralExpr(this);
         }
 
-        public readonly object value;
+        public readonly object? value;
     }
 
     public class Logical : Expr<R> {
-        Logical(Expr<R> left, Token _operator, Expr<R> right) {
+        public Logical(Expr<R> left, Token _operator, Expr<R> right) {
             this.left = left;
             this._operator = _operator;
             this.right = right;
         }
 
-        public override R accept(IVisitor visitor)
+        public override R Accept(IVisitor visitor)
         {
-            return visitor.visitLogicalExpr(this);
+            return visitor.VisitLogicalExpr(this);
         }
 
         public readonly Expr<R> left;
@@ -126,15 +126,15 @@ public abstract class Expr<R> {
 
 
     public class Set : Expr<R> {
-        Set(Expr<R> _object, Token name, Expr<R> value) {
+        public Set(Expr<R> _object, Token name, Expr<R> value) {
             this._object = _object;
             this.name = name;
             this.value = value;
         }
 
-        public override R accept(IVisitor visitor)
+        public override R Accept(IVisitor visitor)
         {
-            return visitor.visitSetExpr(this);
+            return visitor.VisitSetExpr(this);
         }
 
         public readonly Expr<R> _object;
@@ -144,14 +144,14 @@ public abstract class Expr<R> {
 
 
     public class Super : Expr<R> {
-        Super(Token keyword, Token method) {
+        public Super(Token keyword, Token method) {
             this.keyword = keyword;
             this.method = method;
         }
 
-        public override R accept(IVisitor visitor)
+        public override R Accept(IVisitor visitor)
         {
-            return visitor.visitSuperExpr(this);
+            return visitor.VisitSuperExpr(this);
         }
 
         public readonly Token keyword;
@@ -160,13 +160,13 @@ public abstract class Expr<R> {
 
 
     public class This : Expr<R> {
-        This(Token keyword) {
+        public This(Token keyword) {
             this.keyword = keyword;
         }
 
-        public override R accept(IVisitor visitor)
+        public override R Accept(IVisitor visitor)
         {
-            return visitor.visitThisExpr(this);
+            return visitor.VisitThisExpr(this);
         }
 
         public readonly Token keyword;
@@ -174,14 +174,14 @@ public abstract class Expr<R> {
 
 
     public class Unary : Expr<R> {
-        Unary(Token _operator, Expr<R> right) {
+        public Unary(Token _operator, Expr<R> right) {
             this._operator = _operator;
             this.right = right;
         }
 
-        public override R accept(IVisitor visitor)
+        public override R Accept(IVisitor visitor)
         {
-            return visitor.visitUnaryExpr(this);
+            return visitor.VisitUnaryExpr(this);
         }
 
         public readonly Token _operator;
@@ -194,9 +194,9 @@ public abstract class Expr<R> {
             this.name = name;
         }
 
-        public override R accept(IVisitor visitor)
+        public override R Accept(IVisitor visitor)
         {
-            return visitor.visitVariableExpr(this);
+            return visitor.VisitVariableExpr(this);
         }
 
         public readonly Token name;
