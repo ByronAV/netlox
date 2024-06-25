@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 public class Parser<R> {
 
-    private sealed class ParseError : SystemException;
+    private sealed class ParseError : Exception;
     private readonly List<Token> tokens;
     private int current = 0;
 

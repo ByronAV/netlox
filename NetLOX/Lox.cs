@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 public class Lox {
 
     static bool hadError = false;
+    static bool hadRuntimeError = false;
     public static void Main(string[] args) {
         try {
             if (args.Length > 1 ) {
@@ -30,6 +31,7 @@ public class Lox {
 
             // Indicate an error in the exit code.
             if (hadError) Environment.Exit(65);
+            if (hadRuntimeError) Environment.Exit(70);
         } catch (System.IO.IOException e) {
             throw;
         }
@@ -72,7 +74,7 @@ public class Lox {
     }
 
     private static void Report(int line, string where, string message) {
-        Console.Error.Write("[line " + line + "] Error" + where + ": " + message);
+        Console.Error.WriteLine("[line " + line + "] Error" + where + ": " + message);
         hadError = true;
     }
 
@@ -82,5 +84,10 @@ public class Lox {
         } else {
             Report(token.line, " at '" + token.lexeme + "'", message);
         }
+    }
+
+    public static void RuntimeError(RunTimeError error) {
+        Console.Error.WriteLine(error.Message + "\n[line " + error.token.line + "]");
+        hadRuntimeError = true;
     }
 }
