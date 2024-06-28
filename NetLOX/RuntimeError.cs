@@ -1,7 +1,11 @@
-class RunTimeError : Exception {
-    public readonly Token token;
-
+public class RunTimeError : Exception {
     public RunTimeError(Token token, string message) : base(message) {
-        this.token = token;
+        _token = token;
     }
+
+    public Token Token {
+        get => _token;
+    }
+
+    private readonly Token _token;
 }

@@ -16,28 +16,28 @@ class Intepreter : Expr<object>.IVisitor {
     }
 
     public object VisitBinaryExpr(Expr<object>.Binary expr) {
-        object left = Evaluate(expr.left);
-        object right = Evaluate(expr.right);
+        object left = Evaluate(expr.Left);
+        object right = Evaluate(expr.Right);
 
-        switch(expr._operator.type) {
+        switch(expr.Operator.Type) {
             case TokenType.GREATER: {
-                CheckNumberOperands(expr._operator, left, right);
+                CheckNumberOperands(expr.Operator, left, right);
                 return (double)left > (double)right;
             }
             case TokenType.GREATER_EQUAL: {
-                CheckNumberOperands(expr._operator, left, right);
+                CheckNumberOperands(expr.Operator, left, right);
                 return (double)left >= (double)right;
             }
             case TokenType.LESS: {
-                CheckNumberOperands(expr._operator, left, right);
+                CheckNumberOperands(expr.Operator, left, right);
                 return (double)left < (double)right;
             }
             case TokenType.LESS_EQUAL: {
-                CheckNumberOperands(expr._operator, left, right);
+                CheckNumberOperands(expr.Operator, left, right);
                 return (double)left <= (double)right;
             }
             case TokenType.MINUS: {
-                CheckNumberOperands(expr._operator, left, right);
+                CheckNumberOperands(expr.Operator, left, right);
                 return (double)left - (double)right;
             }
             case TokenType.PLUS: {
@@ -49,15 +49,15 @@ class Intepreter : Expr<object>.IVisitor {
                     return (string)left + (string)right;
                 }
 
-                throw new RunTimeError(expr._operator, 
+                throw new RunTimeError(expr.Operator, 
                                     "Operands must be two numbers or two strings");
             }
             case TokenType.SLASH: {
-                CheckNumberOperands(expr._operator, left, right);
+                CheckNumberOperands(expr.Operator, left, right);
                 return (double)left - (double)right;
             }
             case TokenType.STAR: {
-                CheckNumberOperands(expr._operator, left, right);
+                CheckNumberOperands(expr.Operator, left, right);
                 return (double)left - (double)right;
             }
             case TokenType.BANG_EQUAL: return !IsEqual(left, right);
@@ -77,11 +77,11 @@ class Intepreter : Expr<object>.IVisitor {
     }
 
     public object VisitGroupingExpr(Expr<object>.Grouping expr) {
-        return Evaluate(expr.expression);
+        return Evaluate(expr.Expression);
     }
 
     public object? VisitLiteralExpr(Expr<object>.Literal expr) {
-        return expr.value;
+        return expr.Value;
     }
 
     public object VisitLogicalExpr(Expr<object>.Logical expr) {
@@ -101,9 +101,9 @@ class Intepreter : Expr<object>.IVisitor {
     }
 
     public object VisitUnaryExpr(Expr<object>.Unary expr) {
-        object right = Evaluate(expr.right);
+        object right = Evaluate(expr.Right);
 
-        switch(expr._operator.type) {
+        switch(expr.Operator.Type) {
             case TokenType.BANG: return !IsThruthy(right);
             case TokenType.MINUS: return -(double)right;
         }

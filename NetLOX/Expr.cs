@@ -22,67 +22,108 @@ public abstract class Expr<R> {
 
     public class Assign : Expr<R> {
         public Assign(Token name, Expr<R> value) {
-            this.name = name;
-            this.value = value;
+            _name = name;
+            _value = value;
+        }
+
+        public Token Name {
+            get => _name;
+        }
+
+        public Expr<R> Value {
+            get => _value;
         }
 
         public override R Accept(IVisitor visitor) {
             return visitor.VisitAssignExpr(this);
         }
 
-        public readonly Token name;
-        public readonly Expr<R> value;
+        private readonly Token _name;
+        private readonly Expr<R> _value;
     }
 
     public class Binary : Expr<R> {
         public Binary(Expr<R> left, Token _operator, Expr<R> right) {
-            this.left = left;
+            _left = left;
             this._operator = _operator;
-            this.right = right;
+            _right = right;
         }
 
         public override R Accept(IVisitor visitor) {
             return visitor.VisitBinaryExpr(this);
         }
 
-        public readonly Expr<R> left;
-        public readonly Token _operator;
-        public readonly Expr<R> right;
+        public Expr<R> Left {
+            get => _left;
+        }
+
+        public Token Operator {
+            get => _operator;
+        }
+
+        public Expr<R> Right {
+            get => _right;
+        }
+
+        private readonly Expr<R> _left;
+        private readonly Token _operator;
+        private readonly Expr<R> _right;
     }
 
     public class Call : Expr<R> {
         public Call(Expr<R> callee, Token paren, List<Expr<R>> arguments) {
-            this.callee = callee;
-            this.paren = paren;
-            this.arguments = arguments;
+            _callee = callee;
+            _paren = paren;
+            _arguments = arguments;
         }
 
         public override R Accept(IVisitor visitor) {
             return visitor.VisitCallExpr(this);
         }
 
-        public readonly Expr<R> callee;
-        public readonly Token paren;
-        public readonly List<Expr<R>> arguments;
+        public Expr<R> Callee {
+            get => _callee;
+        }
+
+        public Token Paren {
+            get => _paren;
+        }
+
+        public List<Expr<R>> Arguments {
+            get => _arguments;
+        }
+        
+
+        private readonly Expr<R> _callee;
+        private readonly Token _paren;
+        private readonly List<Expr<R>> _arguments;
     }
 
     public class Get : Expr<R> {
         public Get(Expr<R> _object, Token name) {
             this._object = _object;
-            this.name = name;
+            _name = name;
         }
 
         public override R Accept(IVisitor visitor) {
             return visitor.VisitGetExpr(this);
         }
 
-        public readonly Expr<R> _object;
-        public readonly Token name;
+        public Expr<R> Object {
+            get => _object;
+        }
+
+        public Token Name {
+            get => _name;
+        }
+
+        private readonly Expr<R> _object;
+        private readonly Token _name;
     }
 
     public class Grouping : Expr<R> {
         public Grouping(Expr<R> expression) {
-            this.expression = expression;
+            _expression = expression;
         }
 
         public override R Accept(IVisitor visitor)
@@ -90,13 +131,17 @@ public abstract class Expr<R> {
             return visitor.VisitGroupingExpr(this);
         }
 
-        public readonly Expr<R> expression;
+        public Expr<R> Expression {
+            get => _expression;
+        }
+
+        private readonly Expr<R> _expression;
     }
 
 
     public class Literal : Expr<R> {
         public Literal(object value) {
-            this.value = value;
+            _value = value;
         }
 
         public override R Accept(IVisitor visitor)
@@ -104,14 +149,18 @@ public abstract class Expr<R> {
             return visitor.VisitLiteralExpr(this);
         }
 
-        public readonly object? value;
+        public object? Value {
+            get => _value;
+        }
+
+        private readonly object? _value;
     }
 
     public class Logical : Expr<R> {
         public Logical(Expr<R> left, Token _operator, Expr<R> right) {
-            this.left = left;
+            _left = left;
             this._operator = _operator;
-            this.right = right;
+            _right = right;
         }
 
         public override R Accept(IVisitor visitor)
@@ -119,17 +168,29 @@ public abstract class Expr<R> {
             return visitor.VisitLogicalExpr(this);
         }
 
-        public readonly Expr<R> left;
-        public readonly Token _operator;
-        public readonly Expr<R> right;
+        public Expr<R> Left {
+            get => _left;
+        }
+
+        public Token Operator {
+            get => _operator;
+        }
+
+        public Expr<R> Right {
+            get => _right;
+        }
+
+        private readonly Expr<R> _left;
+        private readonly Token _operator;
+        private readonly Expr<R> _right;
     }
 
 
     public class Set : Expr<R> {
         public Set(Expr<R> _object, Token name, Expr<R> value) {
             this._object = _object;
-            this.name = name;
-            this.value = value;
+            _name = name;
+            _value = value;
         }
 
         public override R Accept(IVisitor visitor)
@@ -137,16 +198,28 @@ public abstract class Expr<R> {
             return visitor.VisitSetExpr(this);
         }
 
-        public readonly Expr<R> _object;
-        public readonly Token name;
-        public readonly Expr<R> value;
+        public Expr<R> Object {
+            get => _object;
+        }
+
+        public Token Name {
+            get => _name;
+        }
+
+        public Expr<R> Value {
+            get => _value;
+        }
+
+        private readonly Expr<R> _object;
+        private readonly Token _name;
+        private readonly Expr<R> _value;
     }
 
 
     public class Super : Expr<R> {
         public Super(Token keyword, Token method) {
-            this.keyword = keyword;
-            this.method = method;
+            _keyword = keyword;
+            _method = method;
         }
 
         public override R Accept(IVisitor visitor)
@@ -154,14 +227,22 @@ public abstract class Expr<R> {
             return visitor.VisitSuperExpr(this);
         }
 
-        public readonly Token keyword;
-        public readonly Token method;
+        public Token Keyword {
+            get => _keyword;
+        }
+
+        public Token Method {
+            get => _method;
+        }
+
+        private readonly Token _keyword;
+        private readonly Token _method;
     }
 
 
     public class This : Expr<R> {
         public This(Token keyword) {
-            this.keyword = keyword;
+            _keyword = keyword;
         }
 
         public override R Accept(IVisitor visitor)
@@ -169,14 +250,18 @@ public abstract class Expr<R> {
             return visitor.VisitThisExpr(this);
         }
 
-        public readonly Token keyword;
+        public Token Keyword {
+            get => _keyword;
+        }
+
+        private readonly Token _keyword;
     }
 
 
     public class Unary : Expr<R> {
         public Unary(Token _operator, Expr<R> right) {
             this._operator = _operator;
-            this.right = right;
+            _right = right;
         }
 
         public override R Accept(IVisitor visitor)
@@ -184,14 +269,22 @@ public abstract class Expr<R> {
             return visitor.VisitUnaryExpr(this);
         }
 
-        public readonly Token _operator;
-        public readonly Expr<R> right;
+        public Token Operator {
+            get => _operator;
+        }
+
+        public Expr<R> Right {
+            get => _right;
+        }
+
+        private readonly Token _operator;
+        private readonly Expr<R> _right;
     }
 
 
     public class Variable : Expr<R> {
         Variable(Token name) {
-            this.name = name;
+            _name = name;
         }
 
         public override R Accept(IVisitor visitor)
@@ -199,6 +292,10 @@ public abstract class Expr<R> {
             return visitor.VisitVariableExpr(this);
         }
 
-        public readonly Token name;
+        public Token Name {
+            get => _name;
+        }
+
+        private readonly Token _name;
     }
 }

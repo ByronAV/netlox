@@ -4,12 +4,8 @@ using System.Text.RegularExpressions;
 
 public class Parser<R> {
 
-    private sealed class ParseError : Exception;
-    private readonly List<Token> tokens;
-    private int current = 0;
-
     public Parser(List<Token> tokens) {
-        this.tokens = tokens;
+        _tokens = tokens;
     }
 
     public Expr<R>? Parse() {
@@ -88,7 +84,7 @@ public class Parser<R> {
         if(Match(TokenType.NIL)) return new Expr<R>.Literal(null);
 
         if (Match(TokenType.NUMBER, TokenType.STRING)) {
-            return new Expr<R>.Literal(Previous().literal);
+            return new Expr<R>.Literal(Previous().Literal);
         }
 
         if (Match(TokenType.LEFT_PAREN)) {
@@ -119,24 +115,24 @@ public class Parser<R> {
 
     private bool Check(TokenType type) {
         if (IsAtEnd()) return false;
-        return Peek().type == type;
+        return Peek().Type == type;
     }
 
     private Token Advance() {
-        if (!IsAtEnd()) current++;
+        if (!IsAtEnd()) _current++;
         return Previous();
     }
 
     private bool IsAtEnd() {
-        return Peek().type == TokenType.EOF;
+        return Peek().Type == TokenType.EOF;
     }
 
     private Token Peek() {
-        return tokens[current];
+        return _tokens[_current];
     }
 
     private Token Previous() {
-        return tokens[current - 1];
+        return _tokens[_current - 1];
     }
 
     private ParseError Error(Token token, string message) {
@@ -148,10 +144,10 @@ public class Parser<R> {
         Advance();
 
         while (!IsAtEnd()) {
-            if (Previous().type == TokenType.SEMICOLON) return;
+            if (Previous().Type == TokenType.SEMICOLON) return;
         }
 
-        switch(Peek().type) {
+        switch(Peek().Type) {
             case TokenType.CLASS:
             case TokenType.FUN:
             case TokenType.VAR:
@@ -165,4 +161,8 @@ public class Parser<R> {
 
         Advance();
     }
+
+    private sealed class ParseError : Exception;
+    private readonly List<Token> _tokens;
+    private int _current = 0;
 }

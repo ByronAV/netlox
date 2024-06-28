@@ -11,7 +11,7 @@ class AstPrinter : Expr<string>.IVisitor {
     }
 
     public string VisitBinaryExpr(Expr<string>.Binary expr) {
-        return Parenthesize(expr._operator.lexeme, expr.left, expr.right);
+        return Parenthesize(expr.Operator.Lexeme, expr.Left, expr.Right);
     }
 
     public string VisitCallExpr(Expr<string>.Call expr) {
@@ -23,12 +23,12 @@ class AstPrinter : Expr<string>.IVisitor {
     }
 
     public string VisitGroupingExpr(Expr<string>.Grouping expr) {
-        return Parenthesize("group", expr.expression);
+        return Parenthesize("group", expr.Expression);
     }
 
     public string VisitLiteralExpr(Expr<string>.Literal expr) {
-        if (expr.value == null) return "nil";
-        return expr.value.ToString();
+        if (expr.Value == null) return "nil";
+        return expr.Value.ToString();
     }
 
     public string VisitLogicalExpr(Expr<string>.Logical expr) {
@@ -48,7 +48,7 @@ class AstPrinter : Expr<string>.IVisitor {
     }
 
     public string VisitUnaryExpr(Expr<string>.Unary expr) {
-        return Parenthesize(expr._operator.lexeme, expr.right);
+        return Parenthesize(expr.Operator.Lexeme, expr.Right);
     }
 
     public string VisitVariableExpr(Expr<string>.Variable expr) {
