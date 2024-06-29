@@ -4,7 +4,7 @@ using System.Data.Common;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-class Scanner {
+public class Scanner {
     private readonly string source;
     private readonly List<Token> tokens = new List<Token>();
 
@@ -131,7 +131,7 @@ class Scanner {
         }
 
         if (IsAtEnd()) {
-            Lox.Error(line, "unterminated string.");
+            Lox.Error(line, "Unterminated string.");
             return;
         }
 
@@ -139,7 +139,7 @@ class Scanner {
         Advance();
 
         // Trim the surrounding quotes.
-        string value = source.Substring(start + 1, current - start - 1);
+        string value = source.Substring(start + 1, current - start - 2);
         AddToken(TokenType.STRING, value);
     }
 

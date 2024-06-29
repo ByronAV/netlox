@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 
 public class Lox {
 
+    private static readonly Interpreter interpreter = new Interpreter();
     static bool hadError = false;
     static bool hadRuntimeError = false;
     public static void Main(string[] args) {
@@ -56,17 +57,12 @@ public class Lox {
     private static void Run(string source) {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.ScanTokens();
-        Parser<string> parser = new Parser<string>(tokens);
-        Expr<string>? expression = parser.Parse();
+        Parser<object> parser = new Parser<object>(tokens);
+        Expr<object>? expression = parser.Parse();
 
         if (hadError) return;
 
-        Console.WriteLine(new AstPrinter().Print(expression));
-
-        // For now, just print the tokens
-        // foreach (Token token in tokens) {
-        //     Console.WriteLine(token.ToString());
-        // }
+        interpreter.Interpet(expression);
     }
 
     public static void Error(int line, string message) {

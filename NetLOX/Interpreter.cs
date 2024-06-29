@@ -1,6 +1,6 @@
 using System.Data;
 
-class Intepreter : Expr<object>.IVisitor {
+public class Interpreter : Expr<object>.IVisitor {
 
     public void Interpet(Expr<object> expression) {
         try {
@@ -48,17 +48,24 @@ class Intepreter : Expr<object>.IVisitor {
                 if (left is string && right is string) {
                     return (string)left + (string)right;
                 }
+                // If either operand is string, convert the other
+                // operand to string and concatenate
+                else if (left is string) {
+                    return (string)left + right.ToString();
+                } else {
+                    return left.ToString() + (string)right;
+                }
 
                 throw new RunTimeError(expr.Operator, 
                                     "Operands must be two numbers or two strings");
             }
             case TokenType.SLASH: {
                 CheckNumberOperands(expr.Operator, left, right);
-                return (double)left - (double)right;
+                return (double)left / (double)right;
             }
             case TokenType.STAR: {
                 CheckNumberOperands(expr.Operator, left, right);
-                return (double)left - (double)right;
+                return (double)left * (double)right;
             }
             case TokenType.BANG_EQUAL: return !IsEqual(left, right);
             case TokenType.EQUAL_EQUAL: return IsEqual(left, right);
