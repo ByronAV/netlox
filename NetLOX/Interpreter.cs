@@ -57,10 +57,15 @@ public class Interpreter : Expr<object>.IVisitor {
                 }
 
                 throw new RunTimeError(expr.Operator, 
-                                    "Operands must be two numbers or two strings");
+                                    "Operands must be valid addition types (strings or numbers)");
             }
             case TokenType.SLASH: {
                 CheckNumberOperands(expr.Operator, left, right);
+                // Check if we divide by zero and don't throw exception
+                // but return error
+                if (Convert.ToInt32(right)== 0) {
+                    throw new RunTimeError(expr.Operator, "Trying to divide by zero. Abort");
+                }
                 return (double)left / (double)right;
             }
             case TokenType.STAR: {

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NetLOX")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dd96824fb57bb8ae581acebf531fb2826474b13e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ce77e57376cfa41f29928caba5927c97b6d5f68b")]
 [assembly: System.Reflection.AssemblyProductAttribute("NetLOX")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NetLOX")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
