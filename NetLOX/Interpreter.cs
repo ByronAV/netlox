@@ -1,18 +1,71 @@
 using System.Data;
 
-public class Interpreter : Expr<object>.IVisitor {
+// Stmt should have type Void here but I'm not sure how
+// to convert Void to object. So we're sticking
+// with object for now.
+public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
 
-    public void Interpet(Expr<object> expression) {
+    public void Interpet(List<Stmt<object>> statements) {
         try {
-            object value = Evaluate(expression);
-            Console.WriteLine(Stringify(value));
+            foreach (Stmt<object> statement in statements) {
+                Execute(statement);
+            }
         } catch (RunTimeError error) {
             Lox.RuntimeError(error);
         }
     }
 
-    public object VisitAssignExpr(Expr<object>.Assign expr) {
+    public object? VisitBlockStmt(Stmt<object>.Block stmt) {
+        ExecuteBlock(stmt.Statements, new Environment(_environment));
+        return null;
+    }
+
+    public object? VisitClassStmt(Stmt<object>.Class stmt) {
         throw new NotImplementedException();
+    }
+
+    public object? VisitExpressionStmt(Stmt<object>.Expression stmt) {
+        Evaluate(stmt.Expresion);
+        return null;
+    }
+
+    public object? VisitFunctionStmt(Stmt<object>.Function stmt) {
+        throw new NotImplementedException();
+    }
+
+    public object? VisitIfStmt(Stmt<object>.If stmt) {
+        throw new NotImplementedException();
+    }
+
+    public object? VisitPrintStmt(Stmt<object>.Print stmt) {
+        object value = Evaluate(stmt.Expresion);
+        Console.WriteLine(Stringify(value));
+        return null;
+    }
+
+    public object? VisitReturnStmt(Stmt<object>.Return stmt) {
+        throw new NotImplementedException();
+    }
+
+    public object? VisitVarStmt(Stmt<object>.Var stmt) {
+        object? value = null;
+        if (stmt.Initializer != null) {
+            value = Evaluate(stmt.Initializer);
+        }
+
+        _environment.Define(stmt.Name.Lexeme, value);
+        return null;
+    }
+
+    public object? VisitWhileStmt(Stmt<object>.While stmt) {
+        throw new NotImplementedException();
+    }
+
+    public object VisitAssignExpr(Expr<object>.Assign expr) {
+        object value = Evaluate(expr.Value);
+        _environment.Assign(expr.Name, value);
+
+        return value;
     }
 
     public object VisitBinaryExpr(Expr<object>.Binary expr) {
@@ -125,7 +178,7 @@ public class Interpreter : Expr<object>.IVisitor {
     }
 
     public object VisitVariableExpr(Expr<object>.Variable expr) {
-        throw new NotImplementedException();
+        return _environment.Get(expr.Name);
     }
 
     private object Evaluate(Expr<object> expr) {
@@ -163,4 +216,23 @@ public class Interpreter : Expr<object>.IVisitor {
 
         return obj.ToString();
     }
+
+    private void Execute(Stmt<object> stmt) {
+        stmt.Accept(this);
+    }
+
+    private void ExecuteBlock(List<Stmt<object>> statements, Environment environment) {
+        Environment previous = this._environment;
+        try {
+            this._environment = environment;
+
+            foreach (Stmt<object> statement in statements) {
+                Execute(statement);
+            }
+        } finally {
+            this._environment = previous;
+        }
+    }
+
+    private Environment _environment = new Environment();
 }

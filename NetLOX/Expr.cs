@@ -283,7 +283,7 @@ public abstract class Expr<R> {
 
 
     public class Variable : Expr<R> {
-        Variable(Token name) {
+        public Variable(Token name) {
             _name = name;
         }
 

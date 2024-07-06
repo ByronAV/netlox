@@ -14,7 +14,7 @@ public class Lox {
         try {
             if (args.Length > 1 ) {
                 Console.WriteLine("Usage: netlox [script]");
-                Environment.Exit(64);
+                System.Environment.Exit(64);
             } else if (args.Length == 1) {
                 RunFile(args[0]);
             } else {
@@ -31,8 +31,8 @@ public class Lox {
             Run(new string(Encoding.Default.GetString(bytes)));
 
             // Indicate an error in the exit code.
-            if (hadError) Environment.Exit(65);
-            if (hadRuntimeError) Environment.Exit(70);
+            if (hadError) System.Environment.Exit(65);
+            if (hadRuntimeError) System.Environment.Exit(70);
         } catch (System.IO.IOException e) {
             throw;
         }
@@ -58,11 +58,11 @@ public class Lox {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.ScanTokens();
         Parser<object> parser = new Parser<object>(tokens);
-        Expr<object>? expression = parser.Parse();
+        List<Stmt<object>> statements = parser.Parse();
 
         if (hadError) return;
 
-        interpreter.Interpet(expression);
+        interpreter.Interpet(statements);
     }
 
     public static void Error(int line, string message) {
