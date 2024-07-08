@@ -10,7 +10,7 @@ public class Environment {
 
     public void Assign(Token name, object value) {
         if (_values.ContainsKey(name.Lexeme)) {
-            _values.Add(name.Lexeme, value);
+            _values[name.Lexeme] = value;
             return;
         }
 
@@ -28,7 +28,11 @@ public class Environment {
     }
 
     public object Get(Token name) {
-        if (_values.ContainsKey(name.Lexeme)) {
+        if (_values.ContainsKey(name.Lexeme)){
+            if (_values[name.Lexeme] == null) {
+                throw new RunTimeError(name,
+                "Error: Accessing variable '" + name.Lexeme + "' whose value is `nil`.");
+            }
             return _values[name.Lexeme];
         }
 

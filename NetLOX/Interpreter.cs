@@ -25,6 +25,12 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     public object? VisitExpressionStmt(Stmt<object>.Expression stmt) {
+        // In order for the REPL to work we need to be able to evaluate
+        // expression and then print the result in the env
+        if (System.Environment.GetCommandLineArgs().Length == 1) {
+            Console.WriteLine(Stringify(Evaluate(stmt.Expresion)));
+            return null;
+        }
         Evaluate(stmt.Expresion);
         return null;
     }
