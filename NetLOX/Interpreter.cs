@@ -40,7 +40,12 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     public object? VisitIfStmt(Stmt<object>.If stmt) {
-        throw new NotImplementedException();
+        if (IsTruthy(Evaluate(stmt.Condition))) {
+            Execute(stmt.ThenBranch);
+        } else if (stmt.ElseBranch != null) {
+            Execute(stmt.ElseBranch);
+        }
+        return null;
     }
 
     public object? VisitPrintStmt(Stmt<object>.Print stmt) {
@@ -64,7 +69,11 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     public object? VisitWhileStmt(Stmt<object>.While stmt) {
-        throw new NotImplementedException();
+        while(IsTruthy(Evaluate(stmt.Condition))) {
+            Execute(stmt.Body);
+        }
+
+        return null;
     }
 
     public object VisitAssignExpr(Expr<object>.Assign expr) {
@@ -156,7 +165,15 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     public object VisitLogicalExpr(Expr<object>.Logical expr) {
-        throw new NotImplementedException();
+        object left = Evaluate(expr.Left);
+
+        if (expr.Operator.Type == TokenType.OR) {
+            if (IsTruthy(left)) return left;
+        } else {
+            if (!IsTruthy(left)) return left;
+        }
+
+        return Evaluate(expr.Right);
     }
 
     public object VisitSetExpr(Expr<object>.Set expr) {
@@ -175,7 +192,7 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
         object right = Evaluate(expr.Right);
 
         switch(expr.Operator.Type) {
-            case TokenType.BANG: return !IsThruthy(right);
+            case TokenType.BANG: return !IsTruthy(right);
             case TokenType.MINUS: return -(double)right;
         }
 
@@ -191,7 +208,7 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
         return expr.Accept(this);
     }
 
-    private bool IsThruthy(object obj) {
+    private bool IsTruthy(object obj) {
         if (obj == null) return false;
         if (obj is bool) return (bool)obj;
         return true;
@@ -209,6 +226,8 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     private string Stringify(object obj) {
+        // This should never happen because we're
+        // throwing error for accessing null values
         if (obj == null) return "nil";
 
         if (obj is double) {
@@ -228,15 +247,15 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     private void ExecuteBlock(List<Stmt<object>> statements, Environment environment) {
-        Environment previous = this._environment;
+        Environment previous = _environment;
         try {
-            this._environment = environment;
+            _environment = environment;
 
             foreach (Stmt<object> statement in statements) {
                 Execute(statement);
             }
         } finally {
-            this._environment = previous;
+            _environment = previous;
         }
     }
 

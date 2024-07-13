@@ -114,7 +114,7 @@ public abstract class Stmt<R> {
 
 
     public class If : Stmt<R> {
-        public If(Expr<R> condition, Stmt<R> thenBranch, Stmt<R> elseBranch) {
+        public If(Expr<R> condition, Stmt<R> thenBranch, Stmt<R>? elseBranch) {
             _condition = condition;
             _thenBranch = thenBranch;
             _elseBranch = elseBranch;
@@ -133,13 +133,13 @@ public abstract class Stmt<R> {
             get => _thenBranch;
         }
 
-        public Stmt<R> ElseBranch {
+        public Stmt<R>? ElseBranch {
             get => _elseBranch;
         }
 
         private readonly Expr<R> _condition;
         private readonly Stmt<R> _thenBranch;
-        private readonly Stmt<R> _elseBranch;
+        private readonly Stmt<R>? _elseBranch;
     }
 
 

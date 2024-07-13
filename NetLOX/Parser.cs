@@ -33,10 +33,69 @@ public class Parser<R> {
     }
 
     private Stmt<R> Statement() {
+        if (Match(TokenType.FOR)) return ForStatement();
+        if (Match(TokenType.IF)) return IfStatement();
         if (Match(TokenType.PRINT)) return PrintStatement();
+        if (Match(TokenType.WHILE)) return WhileStatement();
         if (Match(TokenType.LEFT_BRACE)) return new Stmt<R>.Block(Block());
 
         return ExpressionStatement();
+    }
+
+    private Stmt<R> ForStatement() {
+        Consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'.");
+
+        Stmt<R>? initializer;
+        if (Match(TokenType.SEMICOLON)) {
+            initializer = null;
+        } else if (Match(TokenType.VAR)) {
+            initializer = VarDeclaration();
+        } else {
+            initializer = ExpressionStatement();
+        }
+
+        Expr<R>? condition = null;
+        if (!Check(TokenType.SEMICOLON)) {
+            condition = Expression();
+        }
+        Consume(TokenType.SEMICOLON, "Expect ';' after loop condition.");
+
+        Expr<R>? increment = null;
+        if (!Check(TokenType.RIGHT_PAREN)) {
+            increment = Expression();
+        }
+        Consume(TokenType.RIGHT_PAREN, "Expect ')' after for clauses");
+
+        Stmt<R> body = Statement();
+
+        if (increment != null) {
+            body = new Stmt<R>.Block(
+                        new List<Stmt<R>>{body, new Stmt<R>.Expression(increment)}
+            );
+        }
+
+        if (condition == null) condition = new Expr<R>.Literal(true);
+        body = new Stmt<R>.While(condition, body);
+
+        if (initializer != null) {
+            body = new Stmt<R>.Block(new List<Stmt<R>>{initializer, body});
+        }
+
+        return body;
+    }
+
+    private Stmt<R> IfStatement() {
+        Consume(TokenType.LEFT_PAREN, "Expect '(' after 'if'.");
+        Expr<R> condition = Expression();
+        Consume(TokenType.RIGHT_PAREN, "Expect ')' after if condition");
+
+        Stmt<R> thenBranch = Statement();
+        Stmt<R>? elseBranch = null;
+        if (Match(TokenType.ELSE)) {
+            elseBranch = Statement();
+        }
+
+        return new Stmt<R>.If(condition, thenBranch, elseBranch);
     }
 
     private Stmt<R> PrintStatement() {
@@ -63,7 +122,7 @@ public class Parser<R> {
     }
 
     private Expr<R> Assignment() {
-        Expr<R> expr = Equality();
+        Expr<R> expr = Or();
 
         if (Match(TokenType.EQUAL)) {
             Token equals = Previous();
@@ -80,6 +139,30 @@ public class Parser<R> {
         return expr;
     }
 
+    private Expr<R> Or() {
+        Expr<R> expr = And();
+
+        while(Match(TokenType.OR)) {
+            Token oper = Previous();
+            Expr<R> right = And();
+            expr = new Expr<R>.Logical(expr, oper, right);
+        }
+
+        return expr;
+    }
+
+    private Expr<R> And() {
+        Expr<R> expr = Equality();
+
+        while(Match(TokenType.AND)) {
+            Token oper = Previous();
+            Expr<R> right = Equality();
+            expr = new Expr<R>.Logical(expr, oper, right);
+        }
+
+        return expr;
+    }
+
     private Stmt<R> VarDeclaration() {
         Token name = Consume(TokenType.IDENTIFIER, "Expect variable name.");
 
@@ -90,6 +173,15 @@ public class Parser<R> {
 
         Consume(TokenType.SEMICOLON, "Expect ';' after variable declaration");
         return new Stmt<R>.Var(name, initializer);
+    }
+
+    private Stmt<R> WhileStatement() {
+        Consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'.");
+        Expr<R> condition = Expression();
+        Consume(TokenType.RIGHT_PAREN, "Expect ')' after condition.");
+        Stmt<R> body = Statement();
+
+        return new Stmt<R>.While(condition, body);
     }
 
     private Expr<R> Equality() {
@@ -151,6 +243,7 @@ public class Parser<R> {
     }
 
     private Expr<R> Primary() {
+        if (Match(TokenType.BREAK)) return null;
         if (Match(TokenType.FALSE)) return new Expr<R>.Literal(false);
         if (Match(TokenType.TRUE)) return new Expr<R>.Literal(true);
         if(Match(TokenType.NIL)) return new Expr<R>.Literal(null);

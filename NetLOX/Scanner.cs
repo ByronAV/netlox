@@ -29,7 +29,9 @@ public class Scanner {
         {"this", TokenType.THIS},
         {"true", TokenType.TRUE},
         {"var", TokenType.VAR},
-        {"while", TokenType.WHILE}
+        {"while", TokenType.WHILE},
+        {"break", TokenType.BREAK},
+        {"continue", TokenType.CONTINUE}
     };
 
     public Scanner(string source) {
