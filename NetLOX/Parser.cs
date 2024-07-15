@@ -37,6 +37,7 @@ public class Parser<R> {
         if (Match(TokenType.IF)) return IfStatement();
         if (Match(TokenType.PRINT)) return PrintStatement();
         if (Match(TokenType.WHILE)) return WhileStatement();
+        if (Match(TokenType.BREAK)) return BreakStatement();
         if (Match(TokenType.LEFT_BRACE)) return new Stmt<R>.Block(Block());
 
         return ExpressionStatement();
@@ -184,6 +185,11 @@ public class Parser<R> {
         return new Stmt<R>.While(condition, body);
     }
 
+    private Stmt<R> BreakStatement() {
+        Token name = Consume(TokenType.SEMICOLON, "Expect ';' after expression.");
+        return new Stmt<R>.Break(name);
+    }
+
     private Expr<R> Equality() {
         Expr<R> expr = Comparison();
 
@@ -243,7 +249,6 @@ public class Parser<R> {
     }
 
     private Expr<R> Primary() {
-        if (Match(TokenType.BREAK)) return null;
         if (Match(TokenType.FALSE)) return new Expr<R>.Literal(false);
         if (Match(TokenType.TRUE)) return new Expr<R>.Literal(true);
         if(Match(TokenType.NIL)) return new Expr<R>.Literal(null);

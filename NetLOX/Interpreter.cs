@@ -70,9 +70,16 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
 
     public object? VisitWhileStmt(Stmt<object>.While stmt) {
         while(IsTruthy(Evaluate(stmt.Condition))) {
+            _in_loop = true;
             Execute(stmt.Body);
+            if (_should_break) break;
         }
+        _in_loop = false;
+        _should_break = false;
+        return null;
+    }
 
+    public object? VisitBreakStmt(Stmt<object>.Break stmt) {
         return null;
     }
 
@@ -252,6 +259,17 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
             _environment = environment;
 
             foreach (Stmt<object> statement in statements) {
+                // We might have a nested break statement
+                // so we need to check here before continuing
+                if (_should_break) break;
+                // We check here if we have a break statement
+                if ((statement is Stmt<object>.Break) && _in_loop) {
+                    _should_break = true;
+                    break;
+                // This should never happen outside of loops
+                } else if (statement is Stmt<object>.Break) {
+                    throw new RunTimeError(((Stmt<object>.Break)statement).Keyword, "Break statement outside of loop");
+                }
                 Execute(statement);
             }
         } finally {
@@ -260,4 +278,6 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     private Environment _environment = new Environment();
+    static private bool _in_loop = false;
+    static private bool _should_break = false;
 }

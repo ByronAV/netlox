@@ -13,6 +13,7 @@ public abstract class Stmt<R> {
         R? VisitReturnStmt(Return stmt);
         R? VisitVarStmt(Var stmt);
         R? VisitWhileStmt(While stmt);
+        R? VisitBreakStmt(Break stmt);
     }
 
     public abstract R Accept(IVisitor visitor);
@@ -229,5 +230,24 @@ public abstract class Stmt<R> {
 
         private readonly Expr<R> _condition;
         private readonly Stmt<R> _body;
+    }
+
+
+    public class Break : Stmt<R> {
+
+        public Break(Token keyword) {
+            _keyword = keyword;
+        }
+
+        public override R Accept(IVisitor visitor)
+        {
+            return visitor.VisitBreakStmt(this);
+        }
+
+        public Token Keyword {
+            get => _keyword;
+        }
+
+        private readonly Token _keyword;
     }
 }
