@@ -38,13 +38,14 @@ public class Parser<R> {
         if (Match(TokenType.PRINT)) return PrintStatement();
         if (Match(TokenType.WHILE)) return WhileStatement();
         if (Match(TokenType.BREAK)) return BreakStatement();
+        if (Match(TokenType.CONTINUE)) return ContinueStatement();
         if (Match(TokenType.LEFT_BRACE)) return new Stmt<R>.Block(Block());
 
         return ExpressionStatement();
     }
 
     private Stmt<R> ForStatement() {
-        Consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'.");
+        Consume(TokenType.LEFT_PAREN, "ERROR: Expect '(' after 'for'.");
 
         Stmt<R>? initializer;
         if (Match(TokenType.SEMICOLON)) {
@@ -59,13 +60,13 @@ public class Parser<R> {
         if (!Check(TokenType.SEMICOLON)) {
             condition = Expression();
         }
-        Consume(TokenType.SEMICOLON, "Expect ';' after loop condition.");
+        Consume(TokenType.SEMICOLON, "ERROR: Expect ';' after loop condition.");
 
         Expr<R>? increment = null;
         if (!Check(TokenType.RIGHT_PAREN)) {
             increment = Expression();
         }
-        Consume(TokenType.RIGHT_PAREN, "Expect ')' after for clauses");
+        Consume(TokenType.RIGHT_PAREN, "ERROR: Expect ')' after for clauses");
 
         Stmt<R> body = Statement();
 
@@ -86,9 +87,9 @@ public class Parser<R> {
     }
 
     private Stmt<R> IfStatement() {
-        Consume(TokenType.LEFT_PAREN, "Expect '(' after 'if'.");
+        Consume(TokenType.LEFT_PAREN, "ERROR: Expect '(' after 'if'.");
         Expr<R> condition = Expression();
-        Consume(TokenType.RIGHT_PAREN, "Expect ')' after if condition");
+        Consume(TokenType.RIGHT_PAREN, "ERROR: Expect ')' after if condition");
 
         Stmt<R> thenBranch = Statement();
         Stmt<R>? elseBranch = null;
@@ -101,13 +102,13 @@ public class Parser<R> {
 
     private Stmt<R> PrintStatement() {
         Expr<R> value = Expression();
-        Consume(TokenType.SEMICOLON, "Expect ';' after value.");
+        Consume(TokenType.SEMICOLON, "ERROR: Expect ';' after value.");
         return new Stmt<R>.Print(value);
     }
 
     private Stmt<R> ExpressionStatement() {
         Expr<R> expr = Expression();
-        Consume(TokenType.SEMICOLON, "Expect ';' after expression.");
+        Consume(TokenType.SEMICOLON, "ERROR: Expect ';' after expression.");
         return new Stmt<R>.Expression(expr);
     }
 
@@ -118,7 +119,7 @@ public class Parser<R> {
             statements.Add(Declaration());
         }
 
-        Consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
+        Consume(TokenType.RIGHT_BRACE, "ERROR: Expect '}' after block.");
         return statements;
     }
 
@@ -134,7 +135,7 @@ public class Parser<R> {
                 return new Expr<R>.Assign(name, value);
             }
 
-            Error(equals, "Invalid assignment target.");
+            Error(equals, "ERROR: Invalid assignment target.");
         }
 
         return expr;
@@ -165,29 +166,34 @@ public class Parser<R> {
     }
 
     private Stmt<R> VarDeclaration() {
-        Token name = Consume(TokenType.IDENTIFIER, "Expect variable name.");
+        Token name = Consume(TokenType.IDENTIFIER, "ERROR: Expect variable name.");
 
         Expr<R>? initializer = null;
         if (Match(TokenType.EQUAL)) {
             initializer = Expression();
         }
 
-        Consume(TokenType.SEMICOLON, "Expect ';' after variable declaration");
+        Consume(TokenType.SEMICOLON, "ERROR: Expect ';' after variable declaration");
         return new Stmt<R>.Var(name, initializer);
     }
 
     private Stmt<R> WhileStatement() {
-        Consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'.");
+        Consume(TokenType.LEFT_PAREN, "ERROR: Expect '(' after 'while'.");
         Expr<R> condition = Expression();
-        Consume(TokenType.RIGHT_PAREN, "Expect ')' after condition.");
+        Consume(TokenType.RIGHT_PAREN, "ERROR: Expect ')' after condition.");
         Stmt<R> body = Statement();
 
         return new Stmt<R>.While(condition, body);
     }
 
     private Stmt<R> BreakStatement() {
-        Token name = Consume(TokenType.SEMICOLON, "Expect ';' after expression.");
+        Token name = Consume(TokenType.SEMICOLON, "ERROR: Expect ';' after expression.");
         return new Stmt<R>.Break(name);
+    }
+
+    private Stmt<R> ContinueStatement() {
+        Token name = Consume(TokenType.SEMICOLON, "ERROR: Expect ';' after expression.");
+        return new Stmt<R>.Continue(name);
     }
 
     private Expr<R> Equality() {

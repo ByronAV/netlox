@@ -83,7 +83,7 @@ public class Lox {
     }
 
     public static void RuntimeError(RunTimeError error) {
-        Console.Error.WriteLine(error.Message + "\n[line " + error.Token.Line + "]");
+        Console.Error.WriteLine("[line " + error.Token.Line + "] " + error.Message);
         hadRuntimeError = true;
     }
 }

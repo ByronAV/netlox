@@ -73,6 +73,7 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
             _in_loop = true;
             Execute(stmt.Body);
             if (_should_break) break;
+            _should_continue = false;
         }
         _in_loop = false;
         _should_break = false;
@@ -80,7 +81,15 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     public object? VisitBreakStmt(Stmt<object>.Break stmt) {
-        return null;
+        // We should never reach here because this would come from Execute
+        // and we never execute Break Statements
+        throw new RunTimeError(stmt.Keyword, "ERROR: Break statement outside of loop");
+    }
+
+    public object? VisitContinueStmt(Stmt<object>.Continue stmt) {
+        // We should never reach here because this would come from Execute
+        // and we never execute Continue Statements
+        throw new RunTimeError(stmt.Keyword, "ERROR: Continue statement outside of loop");
     }
 
     public object VisitAssignExpr(Expr<object>.Assign expr) {
@@ -132,14 +141,14 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
                 }
 
                 throw new RunTimeError(expr.Operator, 
-                                    "Operands must be valid addition types (strings or numbers)");
+                                    "ERROR: Operands must be valid addition types (strings or numbers)");
             }
             case TokenType.SLASH: {
                 CheckNumberOperands(expr.Operator, left, right);
                 // Check if we divide by zero and don't throw exception
                 // but return error
                 if (Convert.ToInt32(right)== 0) {
-                    throw new RunTimeError(expr.Operator, "Trying to divide by zero. Abort");
+                    throw new RunTimeError(expr.Operator, "ERROR: Trying to divide by zero. Abort");
                 }
                 return (double)left / (double)right;
             }
@@ -229,7 +238,7 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
 
     private void CheckNumberOperands(Token _operator, object left, object right) {
         if (left is double && right is double) return;
-        throw new RunTimeError(_operator, "Operands must be a number.");
+        throw new RunTimeError(_operator, "ERROR: Operands must be a number.");
     }
 
     private string Stringify(object obj) {
@@ -262,13 +271,34 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
                 // We might have a nested break statement
                 // so we need to check here before continuing
                 if (_should_break) break;
+                /* 
+                    This is a bit more complicated. When we see the
+                    _should_continue inside a nested block we should
+                    break the loop of statements BUT if we have reached
+                    the outermost statements (the body of the lox loop)
+                    we still need to increment the counter of the loop.
+                    When we're at the outermost loop the statements will contain
+                    two elements, the body of the lox loop and the increment
+                    expression 
+                    TODO: This might create problems in the case that we have
+                    a nested block with 2 statements and the flag is set.
+                */
+                if (_should_continue && (statements.Count != 2)) break;
+
                 // We check here if we have a break statement
                 if ((statement is Stmt<object>.Break) && _in_loop) {
                     _should_break = true;
                     break;
-                // This should never happen outside of loops
-                } else if (statement is Stmt<object>.Break) {
-                    throw new RunTimeError(((Stmt<object>.Break)statement).Keyword, "Break statement outside of loop");
+                }
+                else if ((statement is Stmt<object>.Continue) && _in_loop) {
+                    _should_continue = true;
+                    break;
+                }
+                // These should never happen outside of loops
+                else if (statement is Stmt<object>.Break) {
+                    throw new RunTimeError(((Stmt<object>.Break)statement).Keyword, "ERROR: Break statement outside of loop");
+                } else if (statement is Stmt<object>.Continue) {
+                    throw new RunTimeError(((Stmt<object>.Continue)statement).Keyword, "ERROR: Continue statement outside of loop");
                 }
                 Execute(statement);
             }
@@ -280,4 +310,5 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     private Environment _environment = new Environment();
     static private bool _in_loop = false;
     static private bool _should_break = false;
+    static private bool _should_continue = false;
 }

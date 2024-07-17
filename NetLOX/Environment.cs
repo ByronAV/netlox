@@ -20,7 +20,7 @@ public class Environment {
         }
 
         throw new RunTimeError(name,
-            "Undefined variable '" + name.Lexeme + "'.");
+            "ERROR: Undefined variable '" + name.Lexeme + "'.");
     }
 
     public void Define(string name, object value) {
@@ -31,7 +31,7 @@ public class Environment {
         if (_values.ContainsKey(name.Lexeme)){
             if (_values[name.Lexeme] == null) {
                 throw new RunTimeError(name,
-                "Error: Accessing variable '" + name.Lexeme + "' whose value is `nil`.");
+                "ERROR: Accessing variable '" + name.Lexeme + "' whose value is `nil`.");
             }
             return _values[name.Lexeme];
         }
@@ -39,7 +39,7 @@ public class Environment {
         if (_enclosing != null) return _enclosing.Get(name);
 
         throw new RunTimeError(name,
-                "Undefined variable '" + name.Lexeme + "'.");
+                "ERROR: Undefined variable '" + name.Lexeme + "'.");
     }
 
     private readonly Environment? _enclosing;
