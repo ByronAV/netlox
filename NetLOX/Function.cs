@@ -1,8 +1,9 @@
 
 class Function : ICallable {
 
-    public Function(Stmt<object>.Function declaration) {
+    public Function(Stmt<object>.Function declaration, Environment closure) {
         _declaration = declaration;
+        _closure = closure;
     }
 
     public override int Arity()
@@ -12,12 +13,16 @@ class Function : ICallable {
 
     public override object Call(Interpreter interpreter, List<object> arguments)
     {
-        Environment environment = new Environment(interpreter.Globals);
+        Environment environment = new Environment(_closure);
         for (int i = 0; i < _declaration.Params.Count; ++i) {
             environment.Define(_declaration.Params[i].Lexeme, arguments[i]);
         }
 
-        interpreter.ExecuteBlock(_declaration.Body, environment);
+        try {
+            interpreter.ExecuteBlock(_declaration.Body, environment);
+        } catch (Return return_value) {
+            return return_value.Value;
+        }
         return null;
     }
 
@@ -27,4 +32,5 @@ class Function : ICallable {
     }
 
     private readonly Stmt<object>.Function _declaration;
+    private readonly Environment _closure;
 }

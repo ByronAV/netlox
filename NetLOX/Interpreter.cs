@@ -1,4 +1,5 @@
 using System.Data;
+using System.Reflection.Metadata.Ecma335;
 
 // Stmt should have type Void here but I'm not sure how
 // to convert Void to object. So we're sticking
@@ -42,7 +43,7 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     public object? VisitFunctionStmt(Stmt<object>.Function stmt) {
-        Function function = new Function(stmt);
+        Function function = new Function(stmt, _environment);
         _environment.Define(stmt.Name.Lexeme, function);
         return null;
     }
@@ -63,7 +64,10 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     public object? VisitReturnStmt(Stmt<object>.Return stmt) {
-        throw new NotImplementedException();
+        object? value = null;
+        if (stmt.Value != null) value = Evaluate(stmt.Value);
+
+        throw new Return(value);
     }
 
     public object? VisitVarStmt(Stmt<object>.Var stmt) {

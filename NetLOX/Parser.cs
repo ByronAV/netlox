@@ -37,6 +37,7 @@ public class Parser<R> {
         if (Match(TokenType.FOR)) return ForStatement();
         if (Match(TokenType.IF)) return IfStatement();
         if (Match(TokenType.PRINT)) return PrintStatement();
+        if (Match(TokenType.RETURN)) return ReturnStatement();
         if (Match(TokenType.WHILE)) return WhileStatement();
         if (Match(TokenType.BREAK)) return BreakStatement();
         if (Match(TokenType.CONTINUE)) return ContinueStatement();
@@ -105,6 +106,18 @@ public class Parser<R> {
         Expr<R> value = Expression();
         Consume(TokenType.SEMICOLON, "ERROR: Expect ';' after value.");
         return new Stmt<R>.Print(value);
+    }
+
+    private Stmt<R> ReturnStatement() {
+        Token keyword = Previous();
+        Expr<R>? value = null;
+
+        if (!Check(TokenType.SEMICOLON)) {
+            value = Expression();
+        }
+
+        Consume(TokenType.SEMICOLON, "ERROR: Expect ';' after return value.");
+        return new Stmt<R>.Return(keyword, value);
     }
 
     private Stmt<R> ExpressionStatement() {
