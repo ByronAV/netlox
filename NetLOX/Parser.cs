@@ -24,6 +24,7 @@ public class Parser<R> {
 
     private Stmt<R>? Declaration() {
         try {
+            if (Match(TokenType.FUN)) return Function("function");
             if (Match(TokenType.VAR)) return VarDeclaration();
             return Statement();
         } catch (ParseError error) {
@@ -110,6 +111,28 @@ public class Parser<R> {
         Expr<R> expr = Expression();
         Consume(TokenType.SEMICOLON, "ERROR: Expect ';' after expression.");
         return new Stmt<R>.Expression(expr);
+    }
+
+    private Stmt<R> Function(string kind) {
+        Token name = Consume(TokenType.IDENTIFIER, "ERROR: Expect " + kind + " name.");
+        Consume(TokenType.LEFT_PAREN, "ERROR: Expect '(' after " + kind + " name.");
+        List<Token> parameters = new List<Token>();
+        if (!Check(TokenType.RIGHT_PAREN)) {
+            do {
+                if (parameters.Count >= 255) {
+                    Error(Peek(), "ERROR: Can't have more than 255 parameters");
+                }
+
+                parameters.Add(
+                    Consume(TokenType.IDENTIFIER, "ERROR: Expect parameter name."));
+            } while (Match(TokenType.COMMA));
+        }
+
+        Consume(TokenType.RIGHT_PAREN, "ERRRO: Expect ')' after parameters.");
+
+        Consume(TokenType.LEFT_BRACE, "ERRRO: Expect '{' before " + kind + " body.");
+        List<Stmt<R>> body = Block();
+        return new Stmt<R>.Function(name, parameters, body);
     }
 
     private List<Stmt<R>> Block() {
@@ -251,7 +274,21 @@ public class Parser<R> {
             return new Expr<R>.Unary(_operator, right);
         }
 
-        return Primary();
+        return Call();
+    }
+
+    private Expr<R> Call() {
+        Expr<R> expr = Primary();
+
+        while(true) {
+            if (Match(TokenType.LEFT_PAREN)) {
+                expr = FinishCall(expr);
+            } else {
+                break;
+            }
+        }
+
+        return expr;
     }
 
     private Expr<R> Primary() {
@@ -340,6 +377,22 @@ public class Parser<R> {
         }
 
         Advance();
+    }
+
+    private Expr<R> FinishCall(Expr<R> callee) {
+        List<Expr<R>> args = new List<Expr<R>>();
+        if (!Check(TokenType.RIGHT_PAREN)) {
+            do {
+                if (args.Count >= 255) {
+                    Error(Peek(), "ERROR: Can't have more than 255 arguments.");
+                }
+                args.Add(Expression());
+            } while(Match(TokenType.COMMA));
+        }
+
+        Token paren = Consume(TokenType.RIGHT_PAREN, "ERROR: Expect ')' after arguments.");
+
+        return new Expr<R>.Call(callee, paren, args);
     }
 
     private sealed class ParseError : Exception;

@@ -5,6 +5,12 @@ using System.Data;
 // with object for now.
 public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
 
+    public Interpreter() {
+        _environment = _globals;
+
+        _globals.Define("clock", new Clock());
+    }
+
     public void Interpet(List<Stmt<object>> statements) {
         try {
             foreach (Stmt<object> statement in statements) {
@@ -36,7 +42,9 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     public object? VisitFunctionStmt(Stmt<object>.Function stmt) {
-        throw new NotImplementedException();
+        Function function = new Function(stmt);
+        _environment.Define(stmt.Name.Lexeme, function);
+        return null;
     }
 
     public object? VisitIfStmt(Stmt<object>.If stmt) {
@@ -165,7 +173,27 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     public object VisitCallExpr(Expr<object>.Call expr) {
-        throw new NotImplementedException();
+        object callee = Evaluate(expr.Callee);
+
+        List<object> args = new List<object>();
+
+        foreach(Expr<object> arg in expr.Arguments) {
+            args.Add(Evaluate(arg));
+        }
+
+        if (callee is not ICallable) {
+            throw new RunTimeError(expr.Paren,
+            "ERROR: Can only call functions and classes.");
+        }
+
+        ICallable function = (ICallable)callee;
+
+        if (args.Count != function.Arity()) {
+            throw new RunTimeError(expr.Paren,
+            "ERROR: Expected " + function.Arity() + " arguments but got "+
+            args.Count + ".");
+        }
+        return function.Call(this, args);
     }
 
     public object VisitGetExpr(Expr<object>.Get expr) {
@@ -262,7 +290,7 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
         stmt.Accept(this);
     }
 
-    private void ExecuteBlock(List<Stmt<object>> statements, Environment environment) {
+    public void ExecuteBlock(List<Stmt<object>> statements, Environment environment) {
         Environment previous = _environment;
         try {
             _environment = environment;
@@ -307,7 +335,12 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
         }
     }
 
-    private Environment _environment = new Environment();
+    public Environment Globals {
+        get => _globals;
+    }
+
+    public readonly Environment _globals = new Environment();
+    private Environment _environment;
     static private bool _in_loop = false;
     static private bool _should_break = false;
     static private bool _should_continue = false;
