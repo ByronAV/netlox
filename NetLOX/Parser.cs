@@ -24,7 +24,10 @@ public class Parser<R> {
 
     private Stmt<R>? Declaration() {
         try {
-            if (Match(TokenType.FUN)) return Function("function");
+            if (Check(TokenType.FUN) && CheckNext(TokenType.IDENTIFIER)) {
+                Consume(TokenType.FUN, null);
+                return Function("function");
+            }
             if (Match(TokenType.VAR)) return VarDeclaration();
             return Statement();
         } catch (ParseError error) {
@@ -128,24 +131,7 @@ public class Parser<R> {
 
     private Stmt<R> Function(string kind) {
         Token name = Consume(TokenType.IDENTIFIER, "ERROR: Expect " + kind + " name.");
-        Consume(TokenType.LEFT_PAREN, "ERROR: Expect '(' after " + kind + " name.");
-        List<Token> parameters = new List<Token>();
-        if (!Check(TokenType.RIGHT_PAREN)) {
-            do {
-                if (parameters.Count >= 255) {
-                    Error(Peek(), "ERROR: Can't have more than 255 parameters");
-                }
-
-                parameters.Add(
-                    Consume(TokenType.IDENTIFIER, "ERROR: Expect parameter name."));
-            } while (Match(TokenType.COMMA));
-        }
-
-        Consume(TokenType.RIGHT_PAREN, "ERRRO: Expect ')' after parameters.");
-
-        Consume(TokenType.LEFT_BRACE, "ERRRO: Expect '{' before " + kind + " body.");
-        List<Stmt<R>> body = Block();
-        return new Stmt<R>.Function(name, parameters, body);
+        return new Stmt<R>.Function(name, FunctionBody(kind));
     }
 
     private List<Stmt<R>> Block() {
@@ -307,7 +293,7 @@ public class Parser<R> {
     private Expr<R> Primary() {
         if (Match(TokenType.FALSE)) return new Expr<R>.Literal(false);
         if (Match(TokenType.TRUE)) return new Expr<R>.Literal(true);
-        if(Match(TokenType.NIL)) return new Expr<R>.Literal(null);
+        if (Match(TokenType.NIL)) return new Expr<R>.Literal(null);
 
         if (Match(TokenType.NUMBER, TokenType.STRING)) {
             return new Expr<R>.Literal(Previous().Literal);
@@ -322,6 +308,9 @@ public class Parser<R> {
             Consume(TokenType.RIGHT_PAREN, "Expect ')' after expression");
             return new Expr<R>.Grouping(expr);
         }
+
+        // This should take care of the lambdas.
+        if (Match(TokenType.FUN)) return FunctionBody("lambda");
 
         throw Error(Peek(), "Expect expression");
     }
@@ -346,6 +335,12 @@ public class Parser<R> {
     private bool Check(TokenType type) {
         if (IsAtEnd()) return false;
         return Peek().Type == type;
+    }
+
+    private bool CheckNext(TokenType type) {
+        if (IsAtEnd()) return false;
+        if (_tokens[_current + 1].Type == TokenType.EOF) return false;
+        return _tokens[_current + 1].Type == type;
     }
 
     private Token Advance() {
@@ -406,6 +401,27 @@ public class Parser<R> {
         Token paren = Consume(TokenType.RIGHT_PAREN, "ERROR: Expect ')' after arguments.");
 
         return new Expr<R>.Call(callee, paren, args);
+    }
+
+    private Expr<R>.Function FunctionBody(string kind) {
+        Consume(TokenType.LEFT_PAREN, "ERROR: Expect '(' after " + kind + " name.");
+        List<Token> parameters = new List<Token>();
+        if (!Check(TokenType.RIGHT_PAREN)) {
+            do {
+                if (parameters.Count >= 255) {
+                    Error(Peek(), "ERROR: Can't have more than 255 parameters");
+                }
+
+                parameters.Add(
+                    Consume(TokenType.IDENTIFIER, "ERROR: Expect parameter name."));
+            } while (Match(TokenType.COMMA));
+        }
+
+        Consume(TokenType.RIGHT_PAREN, "ERROR: Expect ')' after parameters.");
+
+        Consume(TokenType.LEFT_BRACE, "ERROR: Expect '{' before " + kind + " body.");
+        List<Stmt<R>> body = Block();
+        return new Expr<R>.Function(parameters, body);
     }
 
     private sealed class ParseError : Exception;

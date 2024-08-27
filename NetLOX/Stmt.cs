@@ -86,10 +86,9 @@ public abstract class Stmt<R> {
 
 
     public class Function : Stmt<R> {
-        public Function(Token name, List<Token> _params, List<Stmt<R>> body) {
+        public Function(Token name, Expr<R>.Function function) {
             _name = name;
-            this._params = _params;
-            _body = body;
+            _function = function;
         }
 
         public override R Accept(IVisitor visitor)
@@ -101,17 +100,12 @@ public abstract class Stmt<R> {
             get => _name;
         }
 
-        public List<Token> Params {
-            get => _params;
-        }
-
-        public List<Stmt<R>> Body {
-            get => _body;
+        public Expr<R>.Function Function_ {
+            get => _function;
         }
 
         private readonly Token _name;
-        private readonly List<Token> _params;
-        private readonly List<Stmt<R>> _body;
+        private readonly Expr<R>.Function _function;
     }
 
 

@@ -18,6 +18,10 @@ class AstPrinter : Expr<string>.IVisitor {
         throw new NotImplementedException();
     }
 
+    public string VisitFunctionExpr(Expr<string>.Function expr) {
+        throw new NotImplementedException();
+    }
+
     public string VisitGetExpr(Expr<string>.Get expr) {
         throw new NotImplementedException();
     }

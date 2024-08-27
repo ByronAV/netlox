@@ -7,6 +7,7 @@ public abstract class Expr<R> {
         R VisitAssignExpr(Assign expr);
         R VisitBinaryExpr(Binary expr);
         R VisitCallExpr(Call expr);
+        R VisitFunctionExpr(Function expr);
         R VisitGetExpr(Get expr);
         R VisitGroupingExpr(Grouping expr);
         R VisitLiteralExpr(Literal expr);
@@ -97,6 +98,29 @@ public abstract class Expr<R> {
         private readonly Expr<R> _callee;
         private readonly Token _paren;
         private readonly List<Expr<R>> _arguments;
+    }
+
+    public class Function : Expr<R> {
+        public Function(List<Token> parameters, List<Stmt<R>> body) {
+            _parameters = parameters;
+            _body = body;
+        }
+
+        public override R Accept(IVisitor visitor)
+        {
+            return visitor.VisitFunctionExpr(this);
+        }
+
+        public List<Token> Parameters {
+            get => _parameters;
+        }
+
+        public List<Stmt<R>> Body {
+            get => _body;
+        }
+
+        private readonly List<Token> _parameters;
+        private readonly List<Stmt<R>> _body;
     }
 
     public class Get : Expr<R> {

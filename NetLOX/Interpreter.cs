@@ -43,8 +43,8 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     public object? VisitFunctionStmt(Stmt<object>.Function stmt) {
-        Function function = new Function(stmt, _environment);
-        _environment.Define(stmt.Name.Lexeme, function);
+        string fnName = stmt.Name.Lexeme;
+        _environment.Define(fnName, new Function(fnName, stmt.Function_, _environment));
         return null;
     }
 
@@ -198,6 +198,10 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
             args.Count + ".");
         }
         return function.Call(this, args);
+    }
+
+    public object VisitFunctionExpr(Expr<object>.Function expr) {
+        return new Function(null, expr, _environment);
     }
 
     public object VisitGetExpr(Expr<object>.Get expr) {
