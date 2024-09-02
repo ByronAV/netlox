@@ -22,6 +22,107 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
         }
     }
 
+    private object Evaluate(Expr<object> expr) {
+        return expr.Accept(this);
+    }
+
+    private bool IsTruthy(object obj) {
+        if (obj == null) return false;
+        if (obj is bool) return (bool)obj;
+        return true;
+    }
+
+    private bool IsEqual(object a, object b) {
+        if (a == null && b == null) return true;
+        if (a == null) return false;
+        return a.Equals(b);
+    }
+
+    private void CheckNumberOperands(Token _operator, object left, object right) {
+        if (left is double && right is double) return;
+        throw new RunTimeError(_operator, "ERROR: Operands must be a number.");
+    }
+
+    private string Stringify(object obj) {
+        // This should never happen because we're
+        // throwing error for accessing null values
+        if (obj == null) return "nil";
+
+        if (obj is double) {
+            string text = obj.ToString();
+            if (text.EndsWith(".0")) {
+                text = text.Substring(0, text.Length - 2);
+            }
+
+            return text;
+        }
+
+        return obj.ToString();
+    }
+
+    private void Execute(Stmt<object> stmt) {
+        stmt.Accept(this);
+    }
+
+    public void ExecuteBlock(List<Stmt<object>> statements, Environment environment) {
+        Environment previous = _environment;
+        try {
+            _environment = environment;
+
+            foreach (Stmt<object> statement in statements) {
+                // We might have a nested break statement
+                // so we need to check here before continuing
+                if (_should_break) break;
+                /* 
+                    This is a bit more complicated. When we see the
+                    _should_continue inside a nested block we should
+                    break the loop of statements BUT if we have reached
+                    the outermost statements (the body of the lox loop)
+                    we still need to increment the counter of the loop.
+                    When we're at the outermost loop the statements will contain
+                    two elements, the body of the lox loop and the increment
+                    expression 
+                    TODO: This might create problems in the case that we have
+                    a nested block with 2 statements and the flag is set.
+                */
+                if (_should_continue && (statements.Count != 2)) break;
+
+                // We check here if we have a break statement
+                if ((statement is Stmt<object>.Break) && _in_loop) {
+                    _should_break = true;
+                    break;
+                }
+                else if ((statement is Stmt<object>.Continue) && _in_loop) {
+                    _should_continue = true;
+                    break;
+                }
+                // These should never happen outside of loops
+                else if (statement is Stmt<object>.Break) {
+                    throw new RunTimeError(((Stmt<object>.Break)statement).Keyword, "ERROR: Break statement outside of loop");
+                } else if (statement is Stmt<object>.Continue) {
+                    throw new RunTimeError(((Stmt<object>.Continue)statement).Keyword, "ERROR: Continue statement outside of loop");
+                }
+                Execute(statement);
+            }
+        } finally {
+            _environment = previous;
+        }
+    }
+
+    private object LookupVariable(Token name, Expr<object> expr) {
+        int? distance = _locals[expr];
+
+        if (distance != null) {
+            return _environment.GetAt(distance, name.Lexeme);
+        } else {
+            return _globals.Get(name);
+        }
+    }
+
+    public void Resolve(Expr<object> expr, int depth) {
+        _locals.Add(expr, depth);
+    }
+
     public object? VisitBlockStmt(Stmt<object>.Block stmt) {
         ExecuteBlock(stmt.Statements, new Environment(_environment));
         return null;
@@ -106,7 +207,13 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
 
     public object VisitAssignExpr(Expr<object>.Assign expr) {
         object value = Evaluate(expr.Value);
-        _environment.Assign(expr.Name, value);
+        
+        int? distance = _locals[expr];
+        if (distance != null) {
+            _environment.AssignAt(distance, expr.Name, value);
+        } else {
+            _globals.Assign(expr.Name, value);
+        }
 
         return value;
     }
@@ -253,101 +360,15 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     public object VisitVariableExpr(Expr<object>.Variable expr) {
-        return _environment.Get(expr.Name);
-    }
-
-    private object Evaluate(Expr<object> expr) {
-        return expr.Accept(this);
-    }
-
-    private bool IsTruthy(object obj) {
-        if (obj == null) return false;
-        if (obj is bool) return (bool)obj;
-        return true;
-    }
-
-    private bool IsEqual(object a, object b) {
-        if (a == null && b == null) return true;
-        if (a == null) return false;
-        return a.Equals(b);
-    }
-
-    private void CheckNumberOperands(Token _operator, object left, object right) {
-        if (left is double && right is double) return;
-        throw new RunTimeError(_operator, "ERROR: Operands must be a number.");
-    }
-
-    private string Stringify(object obj) {
-        // This should never happen because we're
-        // throwing error for accessing null values
-        if (obj == null) return "nil";
-
-        if (obj is double) {
-            string text = obj.ToString();
-            if (text.EndsWith(".0")) {
-                text = text.Substring(0, text.Length - 2);
-            }
-
-            return text;
-        }
-
-        return obj.ToString();
-    }
-
-    private void Execute(Stmt<object> stmt) {
-        stmt.Accept(this);
-    }
-
-    public void ExecuteBlock(List<Stmt<object>> statements, Environment environment) {
-        Environment previous = _environment;
-        try {
-            _environment = environment;
-
-            foreach (Stmt<object> statement in statements) {
-                // We might have a nested break statement
-                // so we need to check here before continuing
-                if (_should_break) break;
-                /* 
-                    This is a bit more complicated. When we see the
-                    _should_continue inside a nested block we should
-                    break the loop of statements BUT if we have reached
-                    the outermost statements (the body of the lox loop)
-                    we still need to increment the counter of the loop.
-                    When we're at the outermost loop the statements will contain
-                    two elements, the body of the lox loop and the increment
-                    expression 
-                    TODO: This might create problems in the case that we have
-                    a nested block with 2 statements and the flag is set.
-                */
-                if (_should_continue && (statements.Count != 2)) break;
-
-                // We check here if we have a break statement
-                if ((statement is Stmt<object>.Break) && _in_loop) {
-                    _should_break = true;
-                    break;
-                }
-                else if ((statement is Stmt<object>.Continue) && _in_loop) {
-                    _should_continue = true;
-                    break;
-                }
-                // These should never happen outside of loops
-                else if (statement is Stmt<object>.Break) {
-                    throw new RunTimeError(((Stmt<object>.Break)statement).Keyword, "ERROR: Break statement outside of loop");
-                } else if (statement is Stmt<object>.Continue) {
-                    throw new RunTimeError(((Stmt<object>.Continue)statement).Keyword, "ERROR: Continue statement outside of loop");
-                }
-                Execute(statement);
-            }
-        } finally {
-            _environment = previous;
-        }
+        return LookupVariable(expr.Name, expr);
     }
 
     public Environment Globals {
         get => _globals;
     }
 
-    public readonly Environment _globals = new Environment();
+    public readonly Environment _globals = new();
+    public readonly Dictionary<Expr<object>, int> _locals = [];
     private Environment _environment;
     static private bool _in_loop = false;
     static private bool _should_break = false;

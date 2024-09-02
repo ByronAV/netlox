@@ -23,6 +23,10 @@ public class Environment {
             "ERROR: Undefined variable '" + name.Lexeme + "'.");
     }
 
+    public void AssignAt(int? distance, Token name, object value) {
+        Ancestor(distance)?._values.Add(name.Lexeme, value);
+    }
+
     public void Define(string name, object value) {
         _values.Add(name, value);
     }
@@ -40,6 +44,19 @@ public class Environment {
 
         throw new RunTimeError(name,
                 "ERROR: Undefined variable '" + name.Lexeme + "'.");
+    }
+
+    public object GetAt(int? distance, string name) {
+        return Ancestor(distance)?._values[name];
+    }
+
+    public Environment? Ancestor(int? distance) {
+        Environment? environment = this;
+        for (int i = 0; i < distance; ++i) {
+            environment = environment?._enclosing;
+        }
+
+        return environment;
     }
 
     private readonly Environment? _enclosing;

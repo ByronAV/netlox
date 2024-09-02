@@ -33,33 +33,39 @@ public class Lox {
             // Indicate an error in the exit code.
             if (hadError) System.Environment.Exit(65);
             if (hadRuntimeError) System.Environment.Exit(70);
-        } catch (System.IO.IOException e) {
+        } catch (System.IO.IOException) {
             throw;
         }
     }
 
     private static void RunPrompt() {
         try {
-            using (StreamReader sr = new StreamReader(Console.OpenStandardInput())) {
-                for(;;) {
-                    Console.Write("> ");
-                    string? line = sr.ReadLine();
-                    if (line == null) break;
-                    Run(line);
-                    hadError = false;
-                }
+            using StreamReader sr = new(Console.OpenStandardInput());
+            for (; ; )
+            {
+                Console.Write("> ");
+                string? line = sr.ReadLine();
+                if (line == null) break;
+                Run(line);
+                hadError = false;
             }
-        } catch (System.IO.IOException e) {
+        } catch (System.IO.IOException) {
             throw;
         }
     }
 
     private static void Run(string source) {
-        Scanner scanner = new Scanner(source);
+        Scanner scanner = new(source);
         List<Token> tokens = scanner.ScanTokens();
-        Parser<object> parser = new Parser<object>(tokens);
+        Parser<object> parser = new(tokens);
         List<Stmt<object>> statements = parser.Parse();
 
+        if (hadError) return;
+
+        Resolver resolver = new(interpreter);
+        resolver.Resolve(statements);
+
+        // Stop if there was a resolution error
         if (hadError) return;
 
         interpreter.Interpet(statements);
