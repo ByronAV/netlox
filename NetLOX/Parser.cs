@@ -1,14 +1,9 @@
-
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using System.Collections;
 
-public class Parser<R> {
-
-    public Parser(List<Token> tokens) {
-        _tokens = tokens;
-    }
-
+public class Parser<R>(List<Token> tokens)
+{
     public List<Stmt<R>> Parse() {
         List<Stmt<R>> statements = new List<Stmt<R>>();
         while (!IsAtEnd()) {
@@ -24,6 +19,7 @@ public class Parser<R> {
 
     private Stmt<R>? Declaration() {
         try {
+            if (Match(TokenType.CLASS)) return ClassDeclaration();
             if (Check(TokenType.FUN) && CheckNext(TokenType.IDENTIFIER)) {
                 Consume(TokenType.FUN, null);
                 return Function("function");
@@ -129,7 +125,7 @@ public class Parser<R> {
         return new Stmt<R>.Expression(expr);
     }
 
-    private Stmt<R> Function(string kind) {
+    private Stmt<R>.Function Function(string kind) {
         Token name = Consume(TokenType.IDENTIFIER, "ERROR: Expect " + kind + " name.");
         return new Stmt<R>.Function(name, FunctionBody(kind));
     }
@@ -152,12 +148,14 @@ public class Parser<R> {
             Token equals = Previous();
             Expr<R> value = Assignment();
 
-            if (expr is Expr<R>.Variable) {
-                Token name = ((Expr<R>.Variable)expr).Name;
+            if (expr is Expr<R>.Variable variable) {
+                Token name = variable.Name;
                 return new Expr<R>.Assign(name, value);
+            } else if (expr is Expr<R>.Get get) {
+                return new Expr<R>.Set(get.Object, get.Name, value);
             }
 
-            Error(equals, "ERROR: Invalid assignment target.");
+            Parser<R>.Error(equals, "ERROR: Invalid assignment target.");
         }
 
         return expr;
@@ -185,6 +183,25 @@ public class Parser<R> {
         }
 
         return expr;
+    }
+
+    private Stmt<R> ClassDeclaration() {
+        Token name = Consume(TokenType.IDENTIFIER, "ERROR: Expect class name.");
+        Expr<R>.Variable? superclass = null;
+        if (Match(TokenType.LESS)) {
+            Consume(TokenType.IDENTIFIER, "ERROR: Expect superclass name.");
+            superclass = new Expr<R>.Variable(Previous());
+        }
+        Consume(TokenType.LEFT_BRACE, "ERROR: Expect '{' before class body.");
+
+        List<Stmt<R>.Function> methods = [];
+        while(!Check(TokenType.RIGHT_BRACE) && !IsAtEnd()) {
+            methods.Add(Function("method"));
+        }
+
+        Consume(TokenType.RIGHT_BRACE, "ERROR: Expect '}' after class body.");
+
+        return new Stmt<R>.Class(name, superclass, methods);
     }
 
     private Stmt<R> VarDeclaration() {
@@ -282,6 +299,10 @@ public class Parser<R> {
         while(true) {
             if (Match(TokenType.LEFT_PAREN)) {
                 expr = FinishCall(expr);
+            } else if (Match(TokenType.DOT)) {
+                Token name = Consume(TokenType.IDENTIFIER,
+                                    "ERROR: Expect property name after '.'.");
+                expr = new Expr<R>.Get(expr, name);
             } else {
                 break;
             }
@@ -299,6 +320,16 @@ public class Parser<R> {
             return new Expr<R>.Literal(Previous().Literal);
         }
 
+        if (Match(TokenType.SUPER)) {
+            Token keyword = Previous();
+            Consume(TokenType.DOT, "ERROR: Expect '.' after 'super'.");
+            Token method = Consume(TokenType.IDENTIFIER,
+                            "ERROR: Expect superclass method name.");
+            return new Expr<R>.Super(keyword, method);
+        }
+
+        if (Match(TokenType.THIS)) return new Expr<R>.This(Previous());
+
         if (Match(TokenType.IDENTIFIER)) {
             return new Expr<R>.Variable(Previous());
         }
@@ -312,7 +343,7 @@ public class Parser<R> {
         // This should take care of the lambdas.
         if (Match(TokenType.FUN)) return FunctionBody("lambda");
 
-        throw Error(Peek(), "Expect expression");
+        throw Parser<R>.Error(Peek(), "Expect expression");
     }
 
     private bool Match(params TokenType[] types) {
@@ -329,7 +360,7 @@ public class Parser<R> {
     private Token Consume(TokenType type, string message) {
         if (Check(type)) return Advance();
 
-        throw Error(Peek(), message);
+        throw Parser<R>.Error(Peek(), message);
     }
 
     private bool Check(TokenType type) {
@@ -360,7 +391,7 @@ public class Parser<R> {
         return _tokens[_current - 1];
     }
 
-    private ParseError Error(Token token, string message) {
+    private static ParseError Error(Token token, string message) {
         Lox.Error(token, message);
         return new ParseError();
     }
@@ -388,11 +419,11 @@ public class Parser<R> {
     }
 
     private Expr<R> FinishCall(Expr<R> callee) {
-        List<Expr<R>> args = new List<Expr<R>>();
+        List<Expr<R>> args = [];
         if (!Check(TokenType.RIGHT_PAREN)) {
             do {
                 if (args.Count >= 255) {
-                    Error(Peek(), "ERROR: Can't have more than 255 arguments.");
+                    Parser<R>.Error(Peek(), "ERROR: Can't have more than 255 arguments.");
                 }
                 args.Add(Expression());
             } while(Match(TokenType.COMMA));
@@ -405,11 +436,11 @@ public class Parser<R> {
 
     private Expr<R>.Function FunctionBody(string kind) {
         Consume(TokenType.LEFT_PAREN, "ERROR: Expect '(' after " + kind + " name.");
-        List<Token> parameters = new List<Token>();
+        List<Token> parameters = [];
         if (!Check(TokenType.RIGHT_PAREN)) {
             do {
                 if (parameters.Count >= 255) {
-                    Error(Peek(), "ERROR: Can't have more than 255 parameters");
+                    Parser<R>.Error(Peek(), "ERROR: Can't have more than 255 parameters");
                 }
 
                 parameters.Add(
@@ -425,6 +456,6 @@ public class Parser<R> {
     }
 
     private sealed class ParseError : Exception;
-    private readonly List<Token> _tokens;
+    private readonly List<Token> _tokens = tokens;
     private int _current = 0;
 }

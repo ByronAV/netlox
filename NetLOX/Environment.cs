@@ -59,6 +59,10 @@ public class Environment {
         return environment;
     }
 
+    public Environment? Enclosing {
+        get => _enclosing;
+    }
+
     private readonly Environment? _enclosing;
-    private readonly Dictionary<string,object> _values = new Dictionary<string, object>();
+    private readonly Dictionary<string,object> _values = [];
 }

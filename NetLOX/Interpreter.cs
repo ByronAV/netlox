@@ -129,7 +129,39 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     public object? VisitClassStmt(Stmt<object>.Class stmt) {
-        throw new NotImplementedException();
+
+        object? superclass = null;
+        if (stmt.Superclass != null) {
+            superclass = Evaluate(stmt.Superclass);
+            if (superclass is not Class) {
+                throw new RunTimeError(stmt.Superclass.Name,
+                        "Superclass must be a class.");
+            }
+        }
+
+        _environment.Define(stmt.Name.Lexeme, null);
+
+        if (stmt.Superclass != null) {
+            _environment = new Environment(_environment);
+            _environment.Define("super", superclass);
+        }
+
+        Dictionary<string, Function> methods = [];
+        foreach(Stmt<object>.Function method in stmt.Methods) {
+            Function function = new(method.Name.Lexeme, method.Function_, _environment, method.Name.Lexeme.Equals("init"));
+            methods.Add(method.Name.Lexeme, function);
+        }
+
+        Class klass = new(stmt.Name.Lexeme,
+                    (Class)superclass, methods);
+
+        if (superclass != null) {
+            _environment = _environment.Enclosing;
+        }
+
+        _environment.Assign(stmt.Name, klass);
+
+        return null;
     }
 
     public object? VisitExpressionStmt(Stmt<object>.Expression stmt) {
@@ -145,7 +177,7 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
 
     public object? VisitFunctionStmt(Stmt<object>.Function stmt) {
         string fnName = stmt.Name.Lexeme;
-        _environment.Define(fnName, new Function(fnName, stmt.Function_, _environment));
+        _environment.Define(fnName, new Function(fnName, stmt.Function_, _environment, false));
         return null;
     }
 
@@ -308,11 +340,17 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     public object VisitFunctionExpr(Expr<object>.Function expr) {
-        return new Function(null, expr, _environment);
+        return new Function(null, expr, _environment, false);
     }
 
     public object VisitGetExpr(Expr<object>.Get expr) {
-        throw new NotImplementedException();
+        object _object = Evaluate(expr.Object);
+        if (_object is Instance instance) {
+            return instance.Get(expr.Name);
+        }
+
+        throw new RunTimeError(expr.Name,
+                        "ERROR: Only instances have properties.");
     }
 
     public object VisitGroupingExpr(Expr<object>.Grouping expr) {
@@ -336,15 +374,30 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     public object VisitSetExpr(Expr<object>.Set expr) {
-        throw new NotImplementedException();
+        object _object = Evaluate(expr.Object);
+        if (_object is not Instance) {
+            throw new RunTimeError(expr.Name,
+                                "ERROR: Only instances have fields.");
+        }
+
+        object value = Evaluate(expr.Value);
+        ((Instance) _object).Set(expr.Name, value);
+        return value;
     }
 
     public object VisitSuperExpr(Expr<object>.Super expr) {
-        throw new NotImplementedException();
+        int distance = _locals[expr];
+        Class superclass = (Class)_environment.GetAt(distance, "super");
+
+        Instance _object = (Instance)_environment.GetAt(distance - 1, "this");
+
+        Function method = superclass.FindMethod(expr.Method.Lexeme) ?? throw new RunTimeError(expr.Method,
+                        "ERROR: Undefined property '" + expr.Method.Lexeme + "'.");
+        return method.Bind(_object);
     }
 
     public object VisitThisExpr(Expr<object>.This expr) {
-        throw new NotImplementedException();
+        return LookupVariable(expr.Keyword, expr);
     }
 
     public object VisitUnaryExpr(Expr<object>.Unary expr) {
