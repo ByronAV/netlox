@@ -24,14 +24,14 @@ public class Resolver(Interpreter interpreter) : Expr<object>.IVisitor, Stmt<obj
         private VariableState _state = state;
     }
 
-    public void Resolve(List<Stmt<object>> statements) {
-        foreach(Stmt<object> statement in statements) {
+    public void Resolve(List<Stmt<object>?> statements) {
+        foreach(Stmt<object>? statement in statements) {
             Resolve(statement);
         }
     }
 
-    private void Resolve(Stmt<object> stmt) {
-        stmt.Accept(this);
+    private void Resolve(Stmt<object>? stmt) {
+        stmt?.Accept(this);
     }
 
     private void Resolve(Expr<object> expr) {

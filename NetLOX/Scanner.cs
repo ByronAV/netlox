@@ -106,8 +106,8 @@ public class Scanner {
     private void Identifier() {
         while (IsAlphanumeric(Peek())) Advance();
 
-        string text = source.Substring(start, current - start);
-        TokenType? type = keywords.ContainsKey(text) ? keywords[text] : null;
+        string text = source[start..current];
+        TokenType? type = keywords?.ContainsKey(text) ?? false ? keywords?[text] : null;
         type ??= TokenType.IDENTIFIER;
         AddToken(type);
     }

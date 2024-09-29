@@ -58,7 +58,7 @@ public class Lox {
         Scanner scanner = new(source);
         List<Token> tokens = scanner.ScanTokens();
         Parser<object> parser = new(tokens);
-        List<Stmt<object>> statements = parser.Parse();
+        List<Stmt<object>?> statements = parser.Parse();
 
         if (hadError) return;
 

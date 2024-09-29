@@ -20,7 +20,7 @@ public abstract class Stmt<R> {
     public abstract R? Accept(IVisitor visitor);
 
     public class Block : Stmt<R> {
-        public Block(List<Stmt<R>> statements) {
+        public Block(List<Stmt<R>?> statements) {
             _statements = statements;
         }
 
@@ -29,11 +29,11 @@ public abstract class Stmt<R> {
             return visitor.VisitBlockStmt(this);
         }
 
-        public List<Stmt<R>> Statements {
+        public List<Stmt<R>?> Statements {
             get => _statements;
         }
 
-        private readonly List<Stmt<R>> _statements;
+        private readonly List<Stmt<R>?> _statements;
     }
 
 

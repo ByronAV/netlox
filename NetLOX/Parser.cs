@@ -4,8 +4,8 @@ using System.Collections;
 
 public class Parser<R>(List<Token> tokens)
 {
-    public List<Stmt<R>> Parse() {
-        List<Stmt<R>> statements = new List<Stmt<R>>();
+    public List<Stmt<R>?> Parse() {
+        List<Stmt<R>?> statements = [];
         while (!IsAtEnd()) {
             statements.Add(Declaration());
         }
@@ -26,7 +26,7 @@ public class Parser<R>(List<Token> tokens)
             }
             if (Match(TokenType.VAR)) return VarDeclaration();
             return Statement();
-        } catch (ParseError error) {
+        } catch (ParseError) {
             Synchronize();
             return null;
         }
@@ -73,7 +73,7 @@ public class Parser<R>(List<Token> tokens)
 
         if (increment != null) {
             body = new Stmt<R>.Block(
-                        new List<Stmt<R>>{body, new Stmt<R>.Expression(increment)}
+                        [body, new Stmt<R>.Expression(increment)]
             );
         }
 
@@ -81,7 +81,7 @@ public class Parser<R>(List<Token> tokens)
         body = new Stmt<R>.While(condition, body);
 
         if (initializer != null) {
-            body = new Stmt<R>.Block(new List<Stmt<R>>{initializer, body});
+            body = new Stmt<R>.Block([initializer, body]);
         }
 
         return body;
@@ -451,7 +451,7 @@ public class Parser<R>(List<Token> tokens)
         Consume(TokenType.RIGHT_PAREN, "ERROR: Expect ')' after parameters.");
 
         Consume(TokenType.LEFT_BRACE, "ERROR: Expect '{' before " + kind + " body.");
-        List<Stmt<R>> body = Block();
+        List<Stmt<R>?> body = Block();
         return new Expr<R>.Function(parameters, body);
     }
 

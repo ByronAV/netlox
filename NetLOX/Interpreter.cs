@@ -12,9 +12,9 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
         _globals.Define("clock", new Clock());
     }
 
-    public void Interpet(List<Stmt<object>> statements) {
+    public void Interpet(List<Stmt<object>?> statements) {
         try {
-            foreach (Stmt<object> statement in statements) {
+            foreach (Stmt<object>? statement in statements) {
                 Execute(statement);
             }
         } catch (RunTimeError error) {
@@ -60,16 +60,16 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
         return obj.ToString();
     }
 
-    private void Execute(Stmt<object> stmt) {
-        stmt.Accept(this);
+    private void Execute(Stmt<object>? stmt) {
+        stmt?.Accept(this);
     }
 
-    public void ExecuteBlock(List<Stmt<object>> statements, Environment environment) {
-        Environment previous = _environment;
+    public void ExecuteBlock(List<Stmt<object>?> statements, Environment environment) {
+        Environment? previous = _environment;
         try {
             _environment = environment;
 
-            foreach (Stmt<object> statement in statements) {
+            foreach (Stmt<object>? statement in statements) {
                 // We might have a nested break statement
                 // so we need to check here before continuing
                 if (_should_break) break;
@@ -97,10 +97,10 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
                     break;
                 }
                 // These should never happen outside of loops
-                else if (statement is Stmt<object>.Break) {
-                    throw new RunTimeError(((Stmt<object>.Break)statement).Keyword, "ERROR: Break statement outside of loop");
-                } else if (statement is Stmt<object>.Continue) {
-                    throw new RunTimeError(((Stmt<object>.Continue)statement).Keyword, "ERROR: Continue statement outside of loop");
+                else if (statement is Stmt<object>.Break @break) {
+                    throw new RunTimeError(@break.Keyword, "ERROR: Break statement outside of loop");
+                } else if (statement is Stmt<object>.Continue @continue) {
+                    throw new RunTimeError(@continue.Keyword, "ERROR: Continue statement outside of loop");
                 }
                 Execute(statement);
             }
@@ -113,7 +113,7 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
         int? distance = _locals[expr];
 
         if (distance != null) {
-            return _environment.GetAt(distance, name.Lexeme);
+            return _environment?.GetAt(distance, name.Lexeme);
         } else {
             return _globals.Get(name);
         }
@@ -177,7 +177,7 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
 
     public object? VisitFunctionStmt(Stmt<object>.Function stmt) {
         string fnName = stmt.Name.Lexeme;
-        _environment.Define(fnName, new Function(fnName, stmt.Function_, _environment, false));
+        _environment?.Define(fnName, new Function(fnName, stmt.Function_, _environment, false));
         return null;
     }
 
@@ -209,7 +209,7 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
             value = Evaluate(stmt.Initializer);
         }
 
-        _environment.Define(stmt.Name.Lexeme, value);
+        _environment?.Define(stmt.Name.Lexeme, value);
         return null;
     }
 
@@ -242,7 +242,7 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
         
         int? distance = _locals[expr];
         if (distance != null) {
-            _environment.AssignAt(distance, expr.Name, value);
+            _environment?.AssignAt(distance, expr.Name, value);
         } else {
             _globals.Assign(expr.Name, value);
         }
@@ -373,7 +373,7 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
         return Evaluate(expr.Right);
     }
 
-    public object VisitSetExpr(Expr<object>.Set expr) {
+    public object? VisitSetExpr(Expr<object>.Set expr) {
         object? _object = Evaluate(expr.Object);
         if (_object is not Instance) {
             throw new RunTimeError(expr.Name,

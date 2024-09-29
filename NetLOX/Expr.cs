@@ -101,7 +101,7 @@ public abstract class Expr<R> {
     }
 
     public class Function : Expr<R> {
-        public Function(List<Token> parameters, List<Stmt<R>> body) {
+        public Function(List<Token> parameters, List<Stmt<R>?> body) {
             _parameters = parameters;
             _body = body;
         }
@@ -115,12 +115,12 @@ public abstract class Expr<R> {
             get => _parameters;
         }
 
-        public List<Stmt<R>> Body {
+        public List<Stmt<R>?> Body {
             get => _body;
         }
 
         private readonly List<Token> _parameters;
-        private readonly List<Stmt<R>> _body;
+        private readonly List<Stmt<R>?> _body;
     }
 
     public class Get : Expr<R> {
