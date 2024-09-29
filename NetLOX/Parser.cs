@@ -130,8 +130,8 @@ public class Parser<R>(List<Token> tokens)
         return new Stmt<R>.Function(name, FunctionBody(kind));
     }
 
-    private List<Stmt<R>> Block() {
-        List<Stmt<R>> statements = new List<Stmt<R>>();
+    private List<Stmt<R>?> Block() {
+        List<Stmt<R>?> statements = [];
 
         while (!Check(TokenType.RIGHT_BRACE) && !IsAtEnd()) {
             statements.Add(Declaration());
@@ -357,7 +357,7 @@ public class Parser<R>(List<Token> tokens)
         return false;
     }
 
-    private Token Consume(TokenType type, string message) {
+    private Token Consume(TokenType type, string? message) {
         if (Check(type)) return Advance();
 
         throw Parser<R>.Error(Peek(), message);
@@ -391,7 +391,7 @@ public class Parser<R>(List<Token> tokens)
         return _tokens[_current - 1];
     }
 
-    private static ParseError Error(Token token, string message) {
+    private static ParseError Error(Token token, string? message) {
         Lox.Error(token, message);
         return new ParseError();
     }

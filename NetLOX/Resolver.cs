@@ -211,19 +211,19 @@ public class Resolver(Interpreter interpreter) : Expr<object>.IVisitor, Stmt<obj
         throw new NotImplementedException();
     }
 
-    public object VisitAssignExpr(Expr<object>.Assign expr) {
+    public object? VisitAssignExpr(Expr<object>.Assign expr) {
         Resolve(expr.Value);
         ResolveLocal(expr, expr.Name, false);
         return null;
     }
 
-    public object VisitBinaryExpr(Expr<object>.Binary expr) {
+    public object? VisitBinaryExpr(Expr<object>.Binary expr) {
         Resolve(expr.Left);
         Resolve(expr.Right);
         return null;
     }
 
-    public object VisitCallExpr(Expr<object>.Call expr) {
+    public object? VisitCallExpr(Expr<object>.Call expr) {
         Resolve(expr.Callee);
 
         foreach(Expr<object> argument in expr.Arguments) {
@@ -236,34 +236,34 @@ public class Resolver(Interpreter interpreter) : Expr<object>.IVisitor, Stmt<obj
         throw new NotImplementedException();
     }
 
-    public object VisitGetExpr(Expr<object>.Get expr) {
+    public object? VisitGetExpr(Expr<object>.Get expr) {
         Resolve(expr.Object);
         return null;
     }
 
-    public object VisitGroupingExpr(Expr<object>.Grouping expr) {
+    public object? VisitGroupingExpr(Expr<object>.Grouping expr) {
         Resolve(expr.Expression);
         return null;
     }
 
-    public object VisitLiteralExpr(Expr<object>.Literal expr) {
+    public object? VisitLiteralExpr(Expr<object>.Literal expr) {
         return null;
     }
 
-    public object VisitLogicalExpr(Expr<object>.Logical expr) {
+    public object? VisitLogicalExpr(Expr<object>.Logical expr) {
         Resolve(expr.Left);
         Resolve(expr.Right);
         return null;
     }
 
-    public object VisitSetExpr(Expr<object>.Set expr) {
+    public object? VisitSetExpr(Expr<object>.Set expr) {
         Resolve(expr.Value);
         Resolve(expr.Object);
 
         return null;
     }
 
-    public object VisitSuperExpr(Expr<object>.Super expr) {
+    public object? VisitSuperExpr(Expr<object>.Super expr) {
         if (_currentClass == ClassType.NONE) {
             Lox.Error(expr.Keyword,
                     "ERROR: Can't use 'super' outside of class");
@@ -275,7 +275,7 @@ public class Resolver(Interpreter interpreter) : Expr<object>.IVisitor, Stmt<obj
         return null;
     }
 
-    public object VisitThisExpr(Expr<object>.This expr) {
+    public object? VisitThisExpr(Expr<object>.This expr) {
         if (_currentClass == ClassType.NONE) {
             Lox.Error(expr.Keyword,
                 "ERROR: Can't use 'this' outside of a class.");
@@ -285,12 +285,12 @@ public class Resolver(Interpreter interpreter) : Expr<object>.IVisitor, Stmt<obj
         return null;
     }
 
-    public object VisitUnaryExpr(Expr<object>.Unary expr) {
+    public object? VisitUnaryExpr(Expr<object>.Unary expr) {
         Resolve(expr.Right);
         return null;
     }
 
-    public object VisitVariableExpr(Expr<object>.Variable expr) {
+    public object? VisitVariableExpr(Expr<object>.Variable expr) {
         if ((_scopes.Count != 0) &&
             _scopes.Peek().ContainsKey(expr.Name.Lexeme) &&
             _scopes.Peek()[expr.Name.Lexeme].State == Variable.VariableState.DECLARED) {

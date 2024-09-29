@@ -4,22 +4,22 @@ using System.Threading.Tasks.Dataflow;
 
 public abstract class Expr<R> {
     public interface IVisitor {
-        R VisitAssignExpr(Assign expr);
-        R VisitBinaryExpr(Binary expr);
-        R VisitCallExpr(Call expr);
-        R VisitFunctionExpr(Function expr);
-        R VisitGetExpr(Get expr);
-        R VisitGroupingExpr(Grouping expr);
-        R VisitLiteralExpr(Literal expr);
-        R VisitLogicalExpr(Logical expr);
-        R VisitSetExpr(Set expr);
-        R VisitSuperExpr(Super expr);
-        R VisitThisExpr(This expr);
-        R VisitUnaryExpr(Unary expr);
-        R VisitVariableExpr(Variable expr);
+        R? VisitAssignExpr(Assign expr);
+        R? VisitBinaryExpr(Binary expr);
+        R? VisitCallExpr(Call expr);
+        R? VisitFunctionExpr(Function expr);
+        R? VisitGetExpr(Get expr);
+        R? VisitGroupingExpr(Grouping expr);
+        R? VisitLiteralExpr(Literal expr);
+        R? VisitLogicalExpr(Logical expr);
+        R? VisitSetExpr(Set expr);
+        R? VisitSuperExpr(Super expr);
+        R? VisitThisExpr(This expr);
+        R? VisitUnaryExpr(Unary expr);
+        R? VisitVariableExpr(Variable expr);
     }
 
-    public abstract R Accept(IVisitor visitor);
+    public abstract R? Accept(IVisitor visitor);
 
     public class Assign : Expr<R> {
         public Assign(Token name, Expr<R> value) {
@@ -35,7 +35,7 @@ public abstract class Expr<R> {
             get => _value;
         }
 
-        public override R Accept(IVisitor visitor) {
+        public override R? Accept(IVisitor visitor) {
             return visitor.VisitAssignExpr(this);
         }
 
@@ -50,7 +50,7 @@ public abstract class Expr<R> {
             _right = right;
         }
 
-        public override R Accept(IVisitor visitor) {
+        public override R? Accept(IVisitor visitor) {
             return visitor.VisitBinaryExpr(this);
         }
 
@@ -78,7 +78,7 @@ public abstract class Expr<R> {
             _arguments = arguments;
         }
 
-        public override R Accept(IVisitor visitor) {
+        public override R? Accept(IVisitor visitor) {
             return visitor.VisitCallExpr(this);
         }
 
@@ -106,7 +106,7 @@ public abstract class Expr<R> {
             _body = body;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitFunctionExpr(this);
         }
@@ -129,7 +129,7 @@ public abstract class Expr<R> {
             _name = name;
         }
 
-        public override R Accept(IVisitor visitor) {
+        public override R? Accept(IVisitor visitor) {
             return visitor.VisitGetExpr(this);
         }
 
@@ -150,7 +150,7 @@ public abstract class Expr<R> {
             _expression = expression;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitGroupingExpr(this);
         }
@@ -164,11 +164,11 @@ public abstract class Expr<R> {
 
 
     public class Literal : Expr<R> {
-        public Literal(object value) {
+        public Literal(object? value) {
             _value = value;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitLiteralExpr(this);
         }
@@ -187,7 +187,7 @@ public abstract class Expr<R> {
             _right = right;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitLogicalExpr(this);
         }
@@ -217,7 +217,7 @@ public abstract class Expr<R> {
             _value = value;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitSetExpr(this);
         }
@@ -246,7 +246,7 @@ public abstract class Expr<R> {
             _method = method;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitSuperExpr(this);
         }
@@ -269,7 +269,7 @@ public abstract class Expr<R> {
             _keyword = keyword;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitThisExpr(this);
         }
@@ -288,7 +288,7 @@ public abstract class Expr<R> {
             _right = right;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitUnaryExpr(this);
         }
@@ -311,7 +311,7 @@ public abstract class Expr<R> {
             _name = name;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitVariableExpr(this);
         }

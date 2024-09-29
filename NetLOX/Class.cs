@@ -1,5 +1,5 @@
 
-public class Class(string name, Class superclass, Dictionary<string, Function> methods) : ICallable
+public class Class(string name, Class? superclass, Dictionary<string, Function> methods) : ICallable
 {
 
     public Function? FindMethod(string name) {
@@ -18,7 +18,7 @@ public class Class(string name, Class superclass, Dictionary<string, Function> m
         return _name;
     }
 
-    public override object Call(Interpreter interpreter, List<object> arguments)
+    public override object? Call(Interpreter interpreter, List<object> arguments)
     {
         Instance instance = new(this);
         Function? initializer = FindMethod("init");
@@ -38,7 +38,7 @@ public class Class(string name, Class superclass, Dictionary<string, Function> m
     }
 
     private readonly string _name = name;
-    private readonly Class? _superclass;
+    private readonly Class? _superclass = superclass;
     private readonly Dictionary<string, Function> _methods = methods;
     
 }

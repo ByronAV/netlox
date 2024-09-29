@@ -17,14 +17,14 @@ public abstract class Stmt<R> {
         R? VisitContinueStmt(Continue stmt);
     }
 
-    public abstract R Accept(IVisitor visitor);
+    public abstract R? Accept(IVisitor visitor);
 
     public class Block : Stmt<R> {
         public Block(List<Stmt<R>> statements) {
             _statements = statements;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitBlockStmt(this);
         }
@@ -37,14 +37,8 @@ public abstract class Stmt<R> {
     }
 
 
-    public class Class : Stmt<R> {
-        public Class(Token name, Expr<R>.Variable superclass, List<Function> methods) {
-            _name = name;
-            _superclass = superclass;
-            _methods = methods;
-        }
-
-        public override R Accept(IVisitor visitor)
+    public class Class(Token name, Expr<R>.Variable? superclass, List<Stmt<R>.Function> methods) : Stmt<R> {
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitClassStmt(this);
         }
@@ -53,7 +47,7 @@ public abstract class Stmt<R> {
             get => _name;
         }
 
-        public Expr<R>.Variable Superclass {
+        public Expr<R>.Variable? Superclass {
             get => _superclass;
         }
 
@@ -61,9 +55,9 @@ public abstract class Stmt<R> {
             get => _methods;
         }
 
-        private readonly Token _name;
-        private readonly Expr<R>.Variable _superclass;
-        private readonly List<Function> _methods;
+        private readonly Token _name = name;
+        private readonly Expr<R>.Variable? _superclass = superclass;
+        private readonly List<Function> _methods = methods;
     }
 
 
@@ -72,7 +66,7 @@ public abstract class Stmt<R> {
             _expression = expression;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitExpressionStmt(this);
         }
@@ -91,7 +85,7 @@ public abstract class Stmt<R> {
             _function = function;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitFunctionStmt(this);
         }
@@ -116,7 +110,7 @@ public abstract class Stmt<R> {
             _elseBranch = elseBranch;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitIfStmt(this);
         }
@@ -144,7 +138,7 @@ public abstract class Stmt<R> {
             _expression = expression;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitPrintStmt(this);
         }
@@ -158,12 +152,12 @@ public abstract class Stmt<R> {
 
 
     public class Return : Stmt<R> {
-        public Return(Token keyword, Expr<R> value) {
+        public Return(Token keyword, Expr<R>? value) {
             _keyword = keyword;
             _value = value;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitReturnStmt(this);
         }
@@ -172,12 +166,12 @@ public abstract class Stmt<R> {
             get => _keyword;
         }
 
-        public Expr<R> Value {
+        public Expr<R>? Value {
             get => _value;
         }
 
         private readonly Token _keyword;
-        private readonly Expr<R> _value;
+        private readonly Expr<R>? _value;
     }
 
     public class Var : Stmt<R> {
@@ -186,7 +180,7 @@ public abstract class Stmt<R> {
             _initializer = initializer;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitVarStmt(this);
         }
@@ -195,7 +189,7 @@ public abstract class Stmt<R> {
             get => _name;
         }
 
-        public Expr<R> Initializer {
+        public Expr<R>? Initializer {
             get => _initializer;
         }
 
@@ -210,7 +204,7 @@ public abstract class Stmt<R> {
             _body = body;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitWhileStmt(this);
         }
@@ -234,7 +228,7 @@ public abstract class Stmt<R> {
             _keyword = keyword;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitBreakStmt(this);
         }
@@ -252,7 +246,7 @@ public abstract class Stmt<R> {
             _keyword = keyword;
         }
 
-        public override R Accept(IVisitor visitor)
+        public override R? Accept(IVisitor visitor)
         {
             return visitor.VisitContinueStmt(this);
         }

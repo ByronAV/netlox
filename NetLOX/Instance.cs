@@ -17,8 +17,8 @@ public class Instance(Class klass)
                         "ERROR: Undefined property '" + name.Lexeme + "'.");
     }
 
-    public void Set(Token name, object value) {
-        _fields[name.Lexeme] = value;
+    public void Set(Token name, object? value) {
+        _fields[name.Lexeme] = value ?? "";
     }
 
     private Class _klass = klass;

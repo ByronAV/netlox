@@ -108,7 +108,7 @@ public class Scanner {
 
         string text = source.Substring(start, current - start);
         TokenType? type = keywords.ContainsKey(text) ? keywords[text] : null;
-        if (type == null) type = TokenType.IDENTIFIER;
+        type ??= TokenType.IDENTIFIER;
         AddToken(type);
     }
 

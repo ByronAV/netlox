@@ -22,34 +22,34 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
         }
     }
 
-    private object Evaluate(Expr<object> expr) {
+    private object? Evaluate(Expr<object> expr) {
         return expr.Accept(this);
     }
 
-    private bool IsTruthy(object obj) {
+    private static bool IsTruthy(object? obj) {
         if (obj == null) return false;
-        if (obj is bool) return (bool)obj;
+        if (obj is bool v) return v;
         return true;
     }
 
-    private bool IsEqual(object a, object b) {
+    private static bool IsEqual(object a, object b) {
         if (a == null && b == null) return true;
         if (a == null) return false;
         return a.Equals(b);
     }
 
-    private void CheckNumberOperands(Token _operator, object left, object right) {
+    private static void CheckNumberOperands(Token _operator, object left, object right) {
         if (left is double && right is double) return;
         throw new RunTimeError(_operator, "ERROR: Operands must be a number.");
     }
 
-    private string Stringify(object obj) {
+    private static string? Stringify(object? obj) {
         // This should never happen because we're
         // throwing error for accessing null values
         if (obj == null) return "nil";
 
         if (obj is double) {
-            string text = obj.ToString();
+            string text = obj.ToString() ?? "";
             if (text.EndsWith(".0")) {
                 text = text.Substring(0, text.Length - 2);
             }
@@ -109,7 +109,7 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
         }
     }
 
-    private object LookupVariable(Token name, Expr<object> expr) {
+    private object? LookupVariable(Token name, Expr<object> expr) {
         int? distance = _locals[expr];
 
         if (distance != null) {
@@ -139,7 +139,7 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
             }
         }
 
-        _environment.Define(stmt.Name.Lexeme, null);
+        _environment?.Define(stmt.Name.Lexeme, null);
 
         if (stmt.Superclass != null) {
             _environment = new Environment(_environment);
@@ -153,13 +153,13 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
         }
 
         Class klass = new(stmt.Name.Lexeme,
-                    (Class)superclass, methods);
+                    (Class?)superclass, methods);
 
         if (superclass != null) {
-            _environment = _environment.Enclosing;
+            _environment = _environment?.Enclosing;
         }
 
-        _environment.Assign(stmt.Name, klass);
+        _environment?.Assign(stmt.Name, klass);
 
         return null;
     }
@@ -191,7 +191,7 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     public object? VisitPrintStmt(Stmt<object>.Print stmt) {
-        object value = Evaluate(stmt.Expresion);
+        object? value = Evaluate(stmt.Expresion);
         Console.WriteLine(Stringify(value));
         return null;
     }
@@ -237,8 +237,8 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
         throw new RunTimeError(stmt.Keyword, "ERROR: Continue statement outside of loop");
     }
 
-    public object VisitAssignExpr(Expr<object>.Assign expr) {
-        object value = Evaluate(expr.Value);
+    public object? VisitAssignExpr(Expr<object>.Assign expr) {
+        object? value = Evaluate(expr.Value);
         
         int? distance = _locals[expr];
         if (distance != null) {
@@ -250,78 +250,78 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
         return value;
     }
 
-    public object VisitBinaryExpr(Expr<object>.Binary expr) {
-        object left = Evaluate(expr.Left);
-        object right = Evaluate(expr.Right);
+    public object? VisitBinaryExpr(Expr<object>.Binary expr) {
+        object? left = Evaluate(expr.Left);
+        object? right = Evaluate(expr.Right);
 
         switch(expr.Operator.Type) {
             case TokenType.GREATER: {
-                CheckNumberOperands(expr.Operator, left, right);
-                return (double)left > (double)right;
+                    CheckNumberOperands(expr.Operator, left ?? "", right ?? "");
+                return (double?)left > (double?)right;
             }
             case TokenType.GREATER_EQUAL: {
-                CheckNumberOperands(expr.Operator, left, right);
-                return (double)left >= (double)right;
+                    CheckNumberOperands(expr.Operator, left ?? "", right ?? "");
+                return (double?)left >= (double?)right;
             }
             case TokenType.LESS: {
-                CheckNumberOperands(expr.Operator, left, right);
-                return (double)left < (double)right;
+                    CheckNumberOperands(expr.Operator, left ?? "", right ?? "");
+                return (double?)left < (double?)right;
             }
             case TokenType.LESS_EQUAL: {
-                CheckNumberOperands(expr.Operator, left, right);
-                return (double)left <= (double)right;
+                    CheckNumberOperands(expr.Operator, left ?? "", right ?? "");
+                return (double?)left <= (double?)right;
             }
             case TokenType.MINUS: {
-                CheckNumberOperands(expr.Operator, left, right);
-                return (double)left - (double)right;
+                    CheckNumberOperands(expr.Operator, left ?? "", right ?? "");
+                return (double?)left - (double?)right;
             }
             case TokenType.PLUS: {
-                if (left is double && right is double) {
-                    return (double)left + (double)right;
+                if (left is double v && right is double v3) {
+                    return v + v3;
                 }
 
-                if (left is string && right is string) {
-                    return (string)left + (string)right;
+                if (left is string v2 && right is string v1) {
+                    return v2 + v1;
                 }
                 // If either operand is string, convert the other
                 // operand to string and concatenate
-                else if (left is string) {
-                    return (string)left + right.ToString();
+                else if (left is string v4) {
+                    return v4  + right?.ToString();
                 } else {
-                    return left.ToString() + (string)right;
+                    return left?.ToString() + (string?)right;
                 }
 
                 throw new RunTimeError(expr.Operator, 
                                     "ERROR: Operands must be valid addition types (strings or numbers)");
             }
             case TokenType.SLASH: {
-                CheckNumberOperands(expr.Operator, left, right);
+                    CheckNumberOperands(expr.Operator, left ?? "", right ?? "");
                 // Check if we divide by zero and don't throw exception
                 // but return error
                 if (Convert.ToInt32(right)== 0) {
                     throw new RunTimeError(expr.Operator, "ERROR: Trying to divide by zero. Abort");
                 }
-                return (double)left / (double)right;
+                return (double?)left / (double?)right;
             }
             case TokenType.STAR: {
-                CheckNumberOperands(expr.Operator, left, right);
-                return (double)left * (double)right;
+                    CheckNumberOperands(expr.Operator, left ?? "", right ?? "");
+                return (double?)left * (double?)right;
             }
-            case TokenType.BANG_EQUAL: return !IsEqual(left, right);
-            case TokenType.EQUAL_EQUAL: return IsEqual(left, right);
+            case TokenType.BANG_EQUAL: return !IsEqual(left ?? "", right ?? "");
+            case TokenType.EQUAL_EQUAL: return IsEqual(left ?? "", right ?? "");
         }
 
         // Unreachable
         return null;
     }
 
-    public object VisitCallExpr(Expr<object>.Call expr) {
-        object callee = Evaluate(expr.Callee);
+    public object? VisitCallExpr(Expr<object>.Call expr) {
+        object? callee = Evaluate(expr.Callee);
 
         List<object> args = new List<object>();
 
         foreach(Expr<object> arg in expr.Arguments) {
-            args.Add(Evaluate(arg));
+            args.Add(Evaluate(arg) ?? "");
         }
 
         if (callee is not ICallable) {
@@ -344,7 +344,7 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     public object VisitGetExpr(Expr<object>.Get expr) {
-        object _object = Evaluate(expr.Object);
+        object? _object = Evaluate(expr.Object);
         if (_object is Instance instance) {
             return instance.Get(expr.Name);
         }
@@ -353,7 +353,7 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
                         "ERROR: Only instances have properties.");
     }
 
-    public object VisitGroupingExpr(Expr<object>.Grouping expr) {
+    public object? VisitGroupingExpr(Expr<object>.Grouping expr) {
         return Evaluate(expr.Expression);
     }
 
@@ -361,8 +361,8 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
         return expr.Value;
     }
 
-    public object VisitLogicalExpr(Expr<object>.Logical expr) {
-        object left = Evaluate(expr.Left);
+    public object? VisitLogicalExpr(Expr<object>.Logical expr) {
+        object? left = Evaluate(expr.Left);
 
         if (expr.Operator.Type == TokenType.OR) {
             if (IsTruthy(left)) return left;
@@ -374,45 +374,45 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
     }
 
     public object VisitSetExpr(Expr<object>.Set expr) {
-        object _object = Evaluate(expr.Object);
+        object? _object = Evaluate(expr.Object);
         if (_object is not Instance) {
             throw new RunTimeError(expr.Name,
                                 "ERROR: Only instances have fields.");
         }
 
-        object value = Evaluate(expr.Value);
+        object? value = Evaluate(expr.Value);
         ((Instance) _object).Set(expr.Name, value);
         return value;
     }
 
     public object VisitSuperExpr(Expr<object>.Super expr) {
         int distance = _locals[expr];
-        Class superclass = (Class)_environment.GetAt(distance, "super");
+        Class? superclass = (Class?)_environment?.GetAt(distance, "super");
 
-        Instance _object = (Instance)_environment.GetAt(distance - 1, "this");
+        Instance? _object = (Instance?)_environment?.GetAt(distance - 1, "this");
 
-        Function method = superclass.FindMethod(expr.Method.Lexeme) ?? throw new RunTimeError(expr.Method,
+        Function method = superclass?.FindMethod(expr.Method.Lexeme) ?? throw new RunTimeError(expr.Method,
                         "ERROR: Undefined property '" + expr.Method.Lexeme + "'.");
         return method.Bind(_object);
     }
 
-    public object VisitThisExpr(Expr<object>.This expr) {
+    public object? VisitThisExpr(Expr<object>.This expr) {
         return LookupVariable(expr.Keyword, expr);
     }
 
-    public object VisitUnaryExpr(Expr<object>.Unary expr) {
-        object right = Evaluate(expr.Right);
+    public object? VisitUnaryExpr(Expr<object>.Unary expr) {
+        object? right = Evaluate(expr.Right);
 
         switch(expr.Operator.Type) {
             case TokenType.BANG: return !IsTruthy(right);
-            case TokenType.MINUS: return -(double)right;
+            case TokenType.MINUS: return -(double?)right;
         }
 
         // Unreachable
         return null;
     }
 
-    public object VisitVariableExpr(Expr<object>.Variable expr) {
+    public object? VisitVariableExpr(Expr<object>.Variable expr) {
         return LookupVariable(expr.Name, expr);
     }
 
@@ -422,7 +422,7 @@ public class Interpreter : Expr<object>.IVisitor, Stmt<object>.IVisitor {
 
     public readonly Environment _globals = new();
     public readonly Dictionary<Expr<object>, int> _locals = [];
-    private Environment _environment;
+    private Environment? _environment;
     static private bool _in_loop = false;
     static private bool _should_break = false;
     static private bool _should_continue = false;

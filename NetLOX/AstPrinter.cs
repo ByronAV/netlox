@@ -2,7 +2,7 @@
 using System.Text;
 
 class AstPrinter : Expr<string>.IVisitor {
-    public string Print(Expr<string> expr) {
+    public string? Print(Expr<string> expr) {
         return expr.Accept(this);
     }
 
@@ -30,7 +30,7 @@ class AstPrinter : Expr<string>.IVisitor {
         return Parenthesize("group", expr.Expression);
     }
 
-    public string VisitLiteralExpr(Expr<string>.Literal expr) {
+    public string? VisitLiteralExpr(Expr<string>.Literal expr) {
         if (expr.Value == null) return "nil";
         return expr.Value.ToString();
     }
