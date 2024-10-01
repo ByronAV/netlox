@@ -8,7 +8,10 @@ In order to build the project you need to run:
 ```
 dotnet build
 ```
-in the main repository. This should build the solution.
+in the main repository. This should build the solution. To build only for `Debug` or `Release` builds use
+```
+dotnet build -c <Debug|Release>
+```
 
 # Execute REPL
 
